@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Amano Pizza Filter</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#fff7ed;color:#2b1607;line-height:1.45} .wrap{max-width:1100px;margin:0 auto;padding:22px} header{background:linear-gradient(135deg,#b91c1c,#ea580c);color:white;border-radius:24px;padding:24px;box-shadow:0 14px 35px rgba(185,28,28,.22)} h1{margin:0 0 8px;font-size:clamp(28px,5vw,46px);letter-spacing:-.04em}.sub{margin:0;opacity:.92}.panel{margin-top:18px;background:white;border:1px solid #fed7aa;border-radius:22px;padding:18px;box-shadow:0 10px 28px rgba(124,45,18,.08)} .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}.search{flex:1;min-width:220px;border:2px solid #fed7aa;border-radius:14px;padding:12px 14px;font-size:16px;outline:none}.search:focus{border-color:#f97316}.btn{border:0;background:#7c2d12;color:white;border-radius:14px;padding:12px 14px;font-weight:700;cursor:pointer}.meta{font-weight:800;color:#7c2d12;margin:14px 2px 0}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{border:1px solid #fdba74;background:#fff7ed;color:#7c2d12;border-radius:999px;padding:8px 11px;font-weight:650;cursor:pointer;transition:.15s}.chip:hover{transform:translateY(-1px)}.chip.off{background:#111827;color:white;border-color:#111827;text-decoration:line-through}.hint{font-size:14px;color:#7c2d12;margin-top:10px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:18px}.card{background:white;border:1px solid #fed7aa;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(124,45,18,.08)}.card h2{font-size:20px;margin:0 0 8px}.prices{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.price{background:#ffedd5;color:#9a3412;border-radius:10px;padding:4px 8px;font-size:13px;font-weight:800}.ing{display:flex;gap:6px;flex-wrap:wrap}.tag{background:#f3f4f6;color:#374151;border-radius:999px;padding:5px 8px;font-size:13px}.tag.bad{background:#111827;color:white;text-decoration:line-through}.empty{display:none;text-align:center;padding:40px;background:white;border-radius:20px;border:1px dashed #fdba74;color:#7c2d12;margin-top:18px}.footer{font-size:13px;color:#7c2d12;margin:20px 4px 0}.small{font-size:12px;color:#9a3412;margin-top:8px}@media(max-width:640px){.wrap{padding:12px}header{border-radius:18px}.panel{border-radius:18px;padding:14px}.grid{grid-template-columns:1fr}.btn,.search{width:100%}}
+
+    .presets{margin-top:12px;border-top:1px dashed #fed7aa;padding-top:12px}.preset-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.preset-select{flex:1;min-width:190px;border:2px solid #fed7aa;border-radius:14px;padding:11px 12px;font-size:15px;background:#fff7ed;color:#7c2d12;font-weight:700}.btn.small{padding:10px 12px;font-size:14px}.btn.secondary{background:#ea580c}.btn.danger{background:#991b1b}.btn:disabled{opacity:.45;cursor:not-allowed}
+    /* Lesbarkeits-Feinschliff */
+    body{background:#fff3e0;color:#1f1308}.panel,.card{background:#fffaf3;border-color:#f6b36b}.hint{color:#5f2a0a}.meta{color:#5f2407}header{background:linear-gradient(135deg,#8f1d14,#c2410c);box-shadow:0 14px 35px rgba(127,29,29,.26)}.btn{background:#5f2407;color:#fff}.btn.secondary{background:#b45309;color:#fff}.btn.danger{background:#7f1d1d;color:#fff}.search,.preset-select{background:#ffffff;color:#1f1308;border-color:#d97706}.search::placeholder{color:#7c5b3b}.search:focus,.preset-select:focus{border-color:#9a3412;box-shadow:0 0 0 3px rgba(234,88,12,.18)}.preset-select option{padding:7px;color:#1f1308;background:#fffaf3}.preset-select option:checked{background:#7c2d12;color:#fff}.chip{background:#fffaf3;color:#5f2407;border-color:#d97706}.chip.off{background:#1f2937;color:#fff;border-color:#111827}.price{background:#fed7aa;color:#5f2407}.tag{background:#e7e5e4;color:#292524}.tag.bad{background:#1f2937;color:#fff}.empty{color:#5f2407}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Amano Pizza Filter</h1>
+      <p class="sub">Klicke auf eine Zutat, um Pizzen mit dieser Zutat ein- oder auszublenden.</p>
+    </header>
+    <section class="panel">
+      <div class="bar">
+        <input id="search" class="search" placeholder="Pizza suchen… z.B. Diavolo, Tonno, vegan" />
+        <button class="btn" id="reset">Alle Zutaten anzeigen</button>
+      </div>
+      <div class="presets">
+        <div class="preset-row">
+          <select id="presetSelect" class="preset-select" aria-label="Presets auswählen" multiple size="4"></select>
+          <button class="btn small secondary" id="savePreset">Neu speichern</button>
+          <button class="btn small secondary" id="updatePreset">Update</button>
+          <button class="btn small danger" id="deletePreset">Löschen</button>
+        </div>
+        <div class="hint">Mehrere Presets mit Strg/Cmd oder Shift auswählen. Die Auswahl wird automatisch kombiniert. Kombiniert werden die ausgeschalteten Zutaten; die Suche wird nur übernommen, wenn alle gewählten Presets dieselbe Suche haben.</div>
+      </div>
+      <div class="meta"><span id="count"></span> Pizzen sichtbar</div>
+      <div id="chips" class="chips"></div>
+      <div class="hint">Dunkle/durchgestrichene Zutaten sind ausgeschaltet: Pizzen damit werden ausgeblendet.</div>
+    </section>
+    <main id="grid" class="grid"></main>
+    <div id="empty" class="empty">Keine Pizza passt zu deinem Filter. Schalte wieder Zutaten ein oder lösche die Suche.</div>
+    <p class="footer">Quelle: öffentlich gefundene Amano-Speisekarte/Foodora-Daten. Angaben ohne Gewähr; Preise: klein / normal / groß, sofern vorhanden.</p>
+  </div>
+  <script>
+    const pizzas = [
+      {name:'Marinara', price:['€ 7,70','€ 8,90','€ 16,40'], ingredients:['Tomatensauce','Knoblauch','Oregano']},
+      {name:'Margherita', price:['€ 8,50','€ 9,80','€ 18,70'], ingredients:['Tomatensauce','Mozzarella','Oregano']},
+      {name:'Prosciutto', price:['€ 9,70','€ 10,90','€ 20,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Oregano']},
+      {name:'Funghi', price:['€ 9,20','€ 10,60','€ 19,40'], ingredients:['Tomatensauce','Mozzarella','Champignons','Oregano']},
+      {name:'Prosciutto e Funghi', price:['€ 10,20','€ 11,60','€ 21,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Champignons','Oregano']},
+      {name:'Salame', price:['€ 9,70','€ 10,90','€ 20,80'], ingredients:['Tomatensauce','Mozzarella','Salami','Oregano']},
+      {name:'Hawaii', price:['€ 10,70','€ 11,90','€ 22,80'], ingredients:['Tomatensauce','Mozzarella','Schinken','Ananas','Oregano']},
+      {name:'Salmone', price:['€ 11,50','€ 12,80','€ 24,50'], ingredients:['Tomatensauce','Mozzarella','Lachs','Ricotta','Spinat','Knoblauch','Oregano']},
+      {name:'Pizza Calabria', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Büffelmozzarella','Tomaten','Zwiebel','Rucola','Oregano']},
+      {name:'Calzone', price:['€ 10,60','€ 11,90','€ 23,20'], ingredients:['Tomatensauce','Mozzarella','Salami','Schinken','Champignons','Oregano']},
+      {name:'Napoletana', price:['€ 10,50','€ 11,90','€ 23,70'], ingredients:['Tomatensauce','Mozzarella','Sardellen','Kapern','Oliven','Oregano']},
+      {name:'Cardinale', price:['€ 10,50','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Salami','Oregano']},
+      {name:'Diavolo', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Scharfe Salami','Zwiebel','Paprika','Pfefferoni scharf','Oregano']},
+      {name:'Al Tonno', price:['€ 9,70','€ 10,90','€ 20,90'], ingredients:['Tomatensauce','Mozzarella','Thunfisch','Zwiebel','Oregano']},
+      {name:'Oktopus', price:['€ 12,20','€ 14,40','€ 27,80'], ingredients:['Tomatensauce','Mozzarella','Oktopus','Spinat','Zwiebel','Cherrytomaten','Oregano']},
+      {name:'Pancetta', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Speck','Pfefferoni scharf','Zwiebel','Oregano']},
+      {name:'Verdure', price:['€ 10,50','€ 11,80','€ 21,90'], ingredients:['Tomatensauce','Mozzarella','Grillgemüse','Champignons','Oregano']},
+      {name:'Rucola', price:['€ 9,70','€ 10,90','€ 20,70'], ingredients:['Tomatensauce','Mozzarella','Rucola','Parmesan','Oregano']},
+      {name:'Crudo', price:['€ 11,70','€ 12,90','€ 25,90'], ingredients:['Tomatensauce','Mozzarella','Rohschinken','Grana Padana','Oregano']},
+      {name:'Capriciosa', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Champignons','Artischocken','Oliven','Oregano']},
+      {name:'Gamberetti e Rucola', price:['€ 12,10','€ 13,40','€ 26,60'], ingredients:['Tomatensauce','Mozzarella','Garnelen','Rucola','Oliven','Oregano']},
+      {name:'Bauernpizza', price:['€ 10,70','€ 12,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Speck','Mais','Pfefferoni mild','Oregano']},
+      {name:'Quattro Formaggi', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Käse','Oregano']},
+      {name:'Milano', price:['€ 10,70','€ 11,90','€ 22,90'], ingredients:['Tomatensauce','Mozzarella','Speck','Zwiebel','Spiegelei','Oregano']},
+      {name:'Frutti di Mare', price:['€ 11,20','€ 13,60','€ 25,90'], ingredients:['Tomatensauce','Mozzarella','Meeresfrüchte','Oregano']},
+      {name:'Spinaci', price:['€ 9,90','€ 11,60','€ 21,50'], ingredients:['Tomatensauce','Mozzarella','Spinat','Schafskäse','Oregano']},
+      {name:'Carne di Pollo', price:['€ 11,20','€ 13,60','€ 25,80'], ingredients:['Tomatensauce','Mozzarella','Hühnerfleisch','Paprika','Zwiebel','Knoblauchsauce','Oregano']},
+      {name:'Pizza Prima', price:['€ 12,70','€ 14,60','€ 27,90'], ingredients:['Tomatensauce','Mozzarella','Schinken','Salami','Speck','Zwiebel','Oregano']},
+      {name:'Pizza Italia', price:['€ 10,10','€ 11,40','€ 21,60'], ingredients:['Tomatensauce','Mozzarella','Ricotta','Cherrytomaten','Rucola','Oregano']},
+      {name:'Quattro Stagioni', price:['€ 10,90','€ 12,40','€ 23,70'], ingredients:['Tomatensauce','Mozzarella','Schinken','Salami','Champignons','Artischocken','Oliven','Oregano']},
+      {name:'Pizza Rusticana', price:['€ 10,90','€ 12,40','€ 23,70'], ingredients:['Tomatensauce','Mozzarella','Schinken','Champignons','Artischocken','Spiegelei','Oliven','Oregano']},
+      {name:'Mafiosi', price:['€ 13,30','€ 14,70','€ 28,50'], ingredients:['Tomatensauce','Mozzarella','Schinken','Pancetta','Scharfe Salami','Mais','Pfefferoni','Oregano']},
+      {name:'Pizza del Capo', price:['€ 10,80','€ 12,20','€ 22,80'], ingredients:['Sahne','Mozzarella','Kartoffel','Champignons','Zwiebel','Oliven','Oregano']},
+      {name:'Cuore', price:['€ 10,80','€ 12,40','€ 23,50'], ingredients:['Tomatensauce','Mozzarella','Getrocknete Tomaten','Spinat','Schafskäse','Oregano']},
+      {name:'Pizza a Mano', price:['€ 13,10','€ 14,70','€ 28,50'], ingredients:['Tomatensauce','Mozzarella','Basilikumpesto','Spinat','Tomaten','Oregano']},
+      {name:'Wunschpizza', price:['€ 12,10','€ 14,70','€ 25,80'], ingredients:['Tomatensauce','Mozzarella','5 Zutaten nach Wahl','Oregano']},
+      {name:'Bambino Margherita', price:['€ 8,50'], ingredients:['Tomatensauce','Mozzarella','Oregano']},
+      {name:'Bambino Salame', price:['€ 9,70'], ingredients:['Tomatensauce','Mozzarella','Salami','Oregano']},
+      {name:'Bambino Prosciutto', price:['€ 9,70'], ingredients:['Tomatensauce','Mozzarella','Schinken','Oregano']},
+      {name:'Pizza vegana', price:['€ 8,80','€ 9,90','€ 19,30'], ingredients:['Tomatensauce','Veganer Pizzakäse','Oregano']},
+      {name:'Pizza vegana mit 4 Zutaten', price:['€ 9,90','€ 11,70','€ 21,90'], ingredients:['Tomatensauce','Veganer Pizzakäse','Tomaten','Champignons','Mais','Zucchini','Paprika','Melanzani','Spinat','Kapern','Oliven','Ananas','Zwiebel','Rucola','Oregano']}
+    ];
+    const allIngredients=[...new Set(pizzas.flatMap(p=>p.ingredients))].sort((a,b)=>a.localeCompare(b,'de'));
+    const COOKIE_NAME='amanoPizzaPresets';
+    const disabled=new Set();
+    const manualDisabled=new Set();
+    const presetDisabled=new Set();
+    const grid=document.getElementById('grid');
+    const chips=document.getElementById('chips');
+    const search=document.getElementById('search');
+    const presetSelect=document.getElementById('presetSelect');
+
+    function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function readCookie(name){const hit=document.cookie.split('; ').find(row=>row.startsWith(name+'=')); if(!hit)return null; try{return decodeURIComponent(hit.slice(name.length+1));}catch{return null;}}
+    function writeCookie(name,value){document.cookie=`${name}=${encodeURIComponent(value)}; max-age=31536000; path=/; SameSite=Lax`; return readCookie(name)===value;}
+    function readPresetStore(){return readCookie(COOKIE_NAME)||localStorage.getItem(COOKIE_NAME)||'[]';}
+    function getPresets(){try{const data=JSON.parse(readPresetStore()); return Array.isArray(data)?data.filter(p=>p&&p.name):[];}catch{return [];}}
+    function setPresets(presets){const value=JSON.stringify(presets); if(!writeCookie(COOKIE_NAME,value))localStorage.setItem(COOKIE_NAME,value);}
+    function getCurrentPresetState(){return {search:search.value, disabled:[...disabled].sort((a,b)=>a.localeCompare(b,'de'))};}
+    function recomputeDisabled(){disabled.clear(); manualDisabled.forEach(i=>disabled.add(i)); presetDisabled.forEach(i=>disabled.add(i));}
+    function selectedNames(){return [...presetSelect.selectedOptions].map(o=>o.value).filter(Boolean);}
+    function selectedPresets(){const names=selectedNames(); return getPresets().filter(p=>names.includes(p.name));}
+    function combineSelectedPresets(){const presets=selectedPresets(); const oldPresetDisabled=new Set(presetDisabled); const nextPresetDisabled=new Set(); presets.flatMap(p=>p.disabled||[]).forEach(i=>{if(allIngredients.includes(i))nextPresetDisabled.add(i);}); oldPresetDisabled.forEach(i=>{if(!nextPresetDisabled.has(i))manualDisabled.delete(i);}); presetDisabled.clear(); nextPresetDisabled.forEach(i=>presetDisabled.add(i)); recomputeDisabled(); const searches=[...new Set(presets.map(p=>(p.search||'').trim()).filter(Boolean))]; if(presets.length)search.value=searches.length===1?searches[0]:''; render();}
+    function renderPresets(selected=[]){const selectedList=Array.isArray(selected)?selected:(selected?[selected]:[]); const presets=getPresets().sort((a,b)=>a.name.localeCompare(b.name,'de')); presetSelect.innerHTML=presets.map(p=>`<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join(''); selectedList.forEach(name=>{const option=[...presetSelect.options].find(o=>o.value===name); if(option)option.selected=true;}); updatePresetButtons();}
+    function updatePresetButtons(){const count=selectedNames().length; document.getElementById('updatePreset').disabled=count!==1; document.getElementById('deletePreset').disabled=count===0;}
+    function saveNewPreset(){const name=(prompt('Name für das neue Preset:')||'').trim(); if(!name)return; const presets=getPresets(); const existing=presets.findIndex(p=>p.name.toLowerCase()===name.toLowerCase()); const item={name, ...getCurrentPresetState()}; if(existing>=0){if(!confirm('Preset existiert schon. Überschreiben?'))return; presets[existing]=item;}else{presets.push(item);} setPresets(presets); renderPresets([name]);}
+    function updatePreset(){const names=selectedNames(); if(names.length!==1)return; const name=names[0]; const presets=getPresets(); const idx=presets.findIndex(p=>p.name===name); if(idx<0)return; presets[idx]={name,...getCurrentPresetState()}; setPresets(presets); renderPresets([name]);}
+    function deletePreset(){const names=selectedNames(); if(!names.length)return; if(!confirm(`${names.length===1?'Preset':'Presets'} "${names.join(', ')}" wirklich löschen?`))return; setPresets(getPresets().filter(p=>!names.includes(p.name))); renderPresets([]);}
+
+    function renderChips(){chips.innerHTML=allIngredients.map(i=>`<button class="chip ${disabled.has(i)?'off':''}" data-ing="${escapeHtml(i)}">${escapeHtml(i)}</button>`).join('');}
+    function visible(p){const q=search.value.trim().toLowerCase(); const text=(p.name+' '+p.ingredients.join(' ')).toLowerCase(); return (!q||text.includes(q)) && !p.ingredients.some(i=>disabled.has(i));}
+    function render(){renderChips(); const list=pizzas.filter(visible); document.getElementById('count').textContent=list.length+' / '+pizzas.length; document.getElementById('empty').style.display=list.length?'none':'block'; grid.innerHTML=list.map(p=>`<article class="card"><h2>${escapeHtml(p.name)}</h2><div class="prices">${p.price.map((x,idx)=>`<span class="price">${['klein','normal','groß'][idx]||'Preis'} ${escapeHtml(x)}</span>`).join('')}</div><div class="ing">${p.ingredients.map(i=>`<span class="tag ${disabled.has(i)?'bad':''}">${escapeHtml(i)}</span>`).join('')}</div></article>`).join('');}
+    chips.addEventListener('click',e=>{const ing=e.target.dataset.ing;if(!ing)return;manualDisabled.has(ing)?manualDisabled.delete(ing):manualDisabled.add(ing);recomputeDisabled();render();});
+    document.getElementById('reset').onclick=()=>{disabled.clear();manualDisabled.clear();presetDisabled.clear();[...presetSelect.options].forEach(o=>o.selected=false);updatePresetButtons();search.value='';render();};
+    document.getElementById('savePreset').onclick=saveNewPreset;
+    document.getElementById('updatePreset').onclick=updatePreset;
+    document.getElementById('deletePreset').onclick=deletePreset;
+    presetSelect.addEventListener('change',()=>{updatePresetButtons(); combineSelectedPresets();});
+    search.addEventListener('input',render);
+    renderPresets();
+    render();
+  </script>
+</body>
+</html>
