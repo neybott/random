@@ -150,10 +150,24 @@ blueprint:
         boolean: {}
     ai_reason_notification_service:
       name: Benachrichtigungs-Service für KI-Begründung
-      description: Notify-Service, z. B. notify.mobile_app_david_handy. Leer lassen, wenn keine Benachrichtigung gesendet werden soll.
-      default: ""
+      description: Notify-Service für die KI-Begründung. Die Liste enthält die aktuell bekannten Notify-Services; weitere können als eigener Wert eingetragen werden.
+      default: notify.mobile_app_david_handy
       selector:
-        text: {}
+        select:
+          custom_value: true
+          options:
+            - label: David Handy
+              value: notify.mobile_app_david_handy
+            - label: Gabi Handy
+              value: notify.mobile_app_gabi_handy
+            - label: Galaxy Watch 4 Classic
+              value: notify.mobile_app_galaxy_watch4_classic_atjx
+            - label: Samsung Tablet SM-T580
+              value: notify.mobile_app_sm_t580
+            - label: Alle / Standard notify
+              value: notify.notify
+            - label: Persistente Home-Assistant-Benachrichtigung
+              value: notify.persistent_notification
 
 mode: single
 
