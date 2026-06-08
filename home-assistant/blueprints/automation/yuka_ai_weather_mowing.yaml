@@ -110,18 +110,20 @@ blueprint:
       selector:
         number:
           min: 1
-          max: 14
+          max: 21
           step: 1
+          mode: slider
           unit_of_measurement: Tage
     ideal_days_between_mows:
       name: Idealer Abstand in Tagen
-      description: Ab diesem Alter ist Mähen bevorzugt sinnvoll, wenn Wetter/Rasen/Mäher passen. Muss sinnvollerweise zwischen Mindest- und Maximalabstand liegen.
+      description: Ab diesem Alter ist Mähen bevorzugt sinnvoll, wenn Wetter/Rasen/Mäher passen. Sollte zwischen Mindest- und Maximalabstand liegen; intern wird der Wert sicherheitshalber in diesen Bereich geklemmt.
       default: 3
       selector:
         number:
-          min: 2
+          min: 1
           max: 21
           step: 1
+          mode: slider
           unit_of_measurement: Tage
     target_max_days_between_mows:
       name: Ziel-Maximalabstand in Tagen
@@ -129,9 +131,10 @@ blueprint:
       default: 7
       selector:
         number:
-          min: 2
+          min: 1
           max: 21
           step: 1
+          mode: slider
           unit_of_measurement: Tage
     dry_run:
       name: Dry Run / nur testen
@@ -222,6 +225,11 @@ action:
       tage_seit_letzter_mahd: >-
         {% set ts = as_timestamp(states(last_mowed_helper), 0) %}
         {% if ts == 0 %}999{% else %}{{ ((as_timestamp(now()) - ts) / 86400) | round(1) }}{% endif %}
+      ideal_days_effective: >-
+        {% set min_days = min_days_between_mows | float(2) %}
+        {% set max_days = target_max_days_between_mows | float(7) %}
+        {% set ideal_days = ideal_days_between_mows | float(3) %}
+        {{ [max_days, [min_days, ideal_days] | max] | min }}
 
   - condition: template
     value_template: "{{ tage_seit_letzter_mahd | float(0) >= min_days_between_mows | float(2) }}"
@@ -234,15 +242,16 @@ action:
       instructions: >-
         Entscheide, ob der Mammotion Yuka jetzt die konfigurierte Fläche mähen soll.
         Antworte strikt als JSON mit den Feldern should_mow_boolean und reason.
+        Die reason muss sehr kurz sein: maximal ein kurzer Satz mit höchstens 12 Wörtern, keine Aufzählung.
         Regeln:
         - Harte Zeitregel: Mähen nie, wenn weniger als {{ min_days_between_mows }} Tage seit letzter Mahd vergangen sind.
         - Harte Zielregel: Ziel ist, spätestens am Tag {{ target_max_days_between_mows }} wieder zu mähen.
-        - Idealer Abstand: {{ ideal_days_between_mows }} Tage. Vor dem Idealabstand sollst du zurückhaltender sein;
+        - Idealer Abstand: {{ ideal_days_effective }} Tage. Vor dem Idealabstand sollst du zurückhaltender sein;
           ab dem Idealabstand soll Mähen bevorzugt werden, wenn Wetter/Rasen/Mäher passend wirken.
         - Es gibt bewusst keine festen Regen-Grenzwerte. Bewerte Regenmenge, Regenwahrscheinlichkeit,
           Anzahl regnerischer Stunden, aktuellen Status und Akku ganzheitlich.
-        - Zwischen Tag {{ min_days_between_mows }} und Tag {{ ideal_days_between_mows - 1 }} darfst du mähen, aber nur wenn es klar sinnvoll ist.
-        - Zwischen Tag {{ ideal_days_between_mows }} und Tag {{ target_max_days_between_mows - 1 }} sollst du bevorzugt mähen,
+        - Zwischen Tag {{ min_days_between_mows }} und Tag {{ ideal_days_effective | float - 1 }} darfst du mähen, aber nur wenn es klar sinnvoll ist.
+        - Zwischen Tag {{ ideal_days_effective }} und Tag {{ target_max_days_between_mows - 1 }} sollst du bevorzugt mähen,
           wenn keine guten Gründe dagegen sprechen.
         - Ab Tag {{ target_max_days_between_mows }} soll should_mow_boolean normalerweise true sein,
           außer das Wetter ist nach deiner Bewertung klar ungeeignet oder riskant für den Mäher/Rasen.
@@ -251,7 +260,7 @@ action:
         Daten:
         Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}
         Mindestabstand: {{ min_days_between_mows }} Tage
-        Idealer Abstand: {{ ideal_days_between_mows }} Tage
+        Idealer Abstand: {{ ideal_days_effective }} Tage
         Ziel-Maximalabstand: {{ target_max_days_between_mows }} Tage
         Letzte Mahd: {{ letzte_mahd }}
         Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm
@@ -287,13 +296,7 @@ action:
             data:
               title: "Yuka KI-Mähentscheidung"
               message: >-
-                Entscheidung: {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}.
-                Begründung: {{ ai_reason }}
-                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }} (ideal: {{ ideal_days_between_mows }}, max: {{ target_max_days_between_mows }}).
-                Regen bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm,
-                max. Wahrscheinlichkeit: {{ regenwahrscheinlichkeit_max }} %,
-                regnerische Stunden: {{ regnerische_stunden }}.
-                Akku: {{ states(battery_sensor) }} %.
+                {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}: {{ ai_reason }}
 
   - condition: template
     value_template: "{{ ai_should_mow | bool }}"
@@ -310,7 +313,7 @@ action:
               message: >-
                 Dry Run ist aktiv. Der Mäher wurde nicht gestartet und der Helfer wurde nicht aktualisiert.
                 KI-Entscheidung: Mähen wäre jetzt gestartet worden.
-                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }} (ideal: {{ ideal_days_between_mows }}, max: {{ target_max_days_between_mows }}).
+                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }} (ideal: {{ ideal_days_effective }}, max: {{ target_max_days_between_mows }}).
                 Letzte Mahd: {{ letzte_mahd }}.
                 Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm.
                 Maximale Regenwahrscheinlichkeit bis {{ forecast_cutoff_time }}: {{ regenwahrscheinlichkeit_max }} %.
