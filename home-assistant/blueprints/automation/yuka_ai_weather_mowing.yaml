@@ -150,24 +150,18 @@ blueprint:
         boolean: {}
     ai_reason_notification_service:
       name: Benachrichtigungs-Service für KI-Begründung
-      description: Notify-Service für die KI-Begründung. Die Liste enthält die aktuell bekannten Notify-Services; weitere können als eigener Wert eingetragen werden.
+      description: Notify-Service für die KI-Begründung. Als feste Dropdown-Liste definiert, damit Home Assistant kein Textfeld anzeigt.
       default: notify.mobile_app_david_handy
       selector:
         select:
-          custom_value: true
+          mode: dropdown
           options:
-            - label: David Handy
-              value: notify.mobile_app_david_handy
-            - label: Gabi Handy
-              value: notify.mobile_app_gabi_handy
-            - label: Galaxy Watch 4 Classic
-              value: notify.mobile_app_galaxy_watch4_classic_atjx
-            - label: Samsung Tablet SM-T580
-              value: notify.mobile_app_sm_t580
-            - label: Alle / Standard notify
-              value: notify.notify
-            - label: Persistente Home-Assistant-Benachrichtigung
-              value: notify.persistent_notification
+            - notify.mobile_app_david_handy
+            - notify.mobile_app_gabi_handy
+            - notify.mobile_app_galaxy_watch4_classic_atjx
+            - notify.mobile_app_sm_t580
+            - notify.notify
+            - notify.persistent_notification
 
 mode: single
 
