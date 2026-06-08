@@ -148,15 +148,21 @@ blueprint:
       default: false
       selector:
         boolean: {}
-    ai_reason_notification_service:
-      name: Benachrichtigungs-Service für KI-Begründung
+    ai_reason_notification_action:
+      name: Benachrichtigungs-Aktion für KI-Begründung
       description: >-
-        Notify-Service für die KI-Begründung, z. B. notify.mobile_app_david_handy.
-        Als Textfeld konfiguriert, damit der Blueprint auf anderen Home-Assistant-
-        Instanzen mit deren eigenen notify.* Services verwendbar bleibt.
-      default: notify.mobile_app_david_handy
+        Komplette Home-Assistant-Aktion, die bei aktivierter KI-Begründung ausgeführt wird.
+        Dadurch kann jede Home-Assistant-Instanz ihren eigenen notify.* Service oder eine
+        andere Benachrichtigungsaktion direkt im UI auswählen. In eigenen Aktionen können
+        die Variablen ai_should_mow und ai_reason verwendet werden.
+      default:
+        - action: persistent_notification.create
+          data:
+            title: "Yuka KI-Mähentscheidung"
+            message: >-
+              {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}: {{ ai_reason }}
       selector:
-        text: {}
+        action: {}
 
 mode: single
 
@@ -174,7 +180,6 @@ variables:
   target_max_days_between_mows: !input target_max_days_between_mows
   dry_run: !input dry_run
   notify_ai_reason: !input notify_ai_reason
-  ai_reason_notification_service: !input ai_reason_notification_service
   mower_entity: !input mower_entity
   battery_sensor: !input battery_sensor
 
@@ -292,14 +297,8 @@ action:
   - choose:
       - conditions:
           - condition: template
-            value_template: >-
-              {{ notify_ai_reason | bool and (ai_reason_notification_service | string | trim) != '' }}
-        sequence:
-          - action: "{{ ai_reason_notification_service }}"
-            data:
-              title: "Yuka KI-Mähentscheidung"
-              message: >-
-                {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}: {{ ai_reason }}
+            value_template: "{{ notify_ai_reason | bool }}"
+        sequence: !input ai_reason_notification_action
 
   - condition: template
     value_template: "{{ ai_should_mow | bool }}"
