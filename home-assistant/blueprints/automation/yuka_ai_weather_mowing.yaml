@@ -41,6 +41,13 @@ blueprint:
       selector:
         entity:
           domain: weather
+    ai_task_entity:
+      name: KI-Modell / AI-Task-Entity
+      description: AI-Task-Entity bzw. Modell, das die Mähentscheidung treffen soll.
+      default: ai_task.openai_ai_task
+      selector:
+        entity:
+          domain: ai_task
     last_mowed_helper:
       name: Helfer „zuletzt gemäht“
       description: input_datetime Helfer für die letzte Mahd dieser Fläche.
@@ -187,6 +194,7 @@ action:
   - action: ai_task.generate_data
     metadata: {}
     data:
+      entity_id: !input ai_task_entity
       task_name: yuka_flaeche_maehentscheidung
       instructions: >-
         Entscheide, ob der Mammotion Yuka jetzt die konfigurierte Fläche mähen soll.
