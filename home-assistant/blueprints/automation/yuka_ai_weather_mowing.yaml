@@ -1,0 +1,265 @@
+blueprint:
+  name: Yuka KI-Mähentscheidung nach Wetter und letztem Mähen
+  description: >-
+    Startet einen Mammotion/Yuka-Mähauftrag automatisch anhand von Wettervorhersage,
+    Akkustand und letzter Mahd. Die einzigen festen Zeitregeln sind: nie unter 2
+    Tagen seit letzter Mahd und ab 7 Tagen soll die KI eher zum Mähen tendieren,
+    sofern Wetter/Rasen/Mäher nicht klar ungeeignet wirken.
+  domain: automation
+  source_url: https://github.com/neybott/random/blob/main/home-assistant/blueprints/automation/yuka_ai_weather_mowing.yaml
+  input:
+    mower_entity:
+      name: Mäher
+      description: Lawn-mower Entity des Mammotion/Yuka.
+      default: lawn_mower.yuka_vpxxe843
+      selector:
+        entity:
+          domain: lawn_mower
+    battery_sensor:
+      name: Akku-Sensor
+      description: Akku-Sensor des Mähers in Prozent.
+      default: sensor.yuka_vpxxe843_batterie
+      selector:
+        entity:
+          domain: sensor
+          device_class: battery
+    minimum_battery_percent:
+      name: Mindest-Akku in Prozent
+      description: Unter diesem Akkustand wird nicht gestartet.
+      default: 90
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+          mode: slider
+    weather_entity:
+      name: Wetter-Entity
+      description: Wetter-Entity mit stündlicher Vorhersage.
+      default: weather.home
+      selector:
+        entity:
+          domain: weather
+    last_mowed_helper:
+      name: Helfer „zuletzt gemäht“
+      description: input_datetime Helfer für die letzte Mahd dieser Fläche.
+      default: input_datetime.yuka_flaeche_1_zuletzt_gemaeht
+      selector:
+        entity:
+          domain: input_datetime
+    start_button:
+      name: Start-Button / Aufgabe
+      description: Button, der die gewünschte Mammotion/Yuka-Aufgabe startet.
+      default: button.yuka_aufgabe_1
+      selector:
+        entity:
+          domain: button
+    use_area_switch:
+      name: Bereich-Schalter vor dem Start einschalten
+      description: Optional, falls dein Mammotion-Setup vor dem Aufgabenstart einen Bereich-Schalter benötigt.
+      default: false
+      selector:
+        boolean: {}
+    area_switch:
+      name: Bereich-Schalter
+      description: Optionaler Bereich-Schalter, z. B. Area 1 / Vorne.
+      default: switch.yuka_bereich_vorne
+      selector:
+        entity:
+          domain: switch
+    run_time:
+      name: Startzeit
+      description: Uhrzeit, zu der die Entscheidung täglich geprüft wird.
+      default: "08:00:00"
+      selector:
+        time: {}
+    weekdays:
+      name: Wochentage
+      description: Tage, an denen geprüft werden soll.
+      default:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Montag
+              value: "1"
+            - label: Dienstag
+              value: "2"
+            - label: Mittwoch
+              value: "3"
+            - label: Donnerstag
+              value: "4"
+            - label: Freitag
+              value: "5"
+            - label: Samstag
+              value: "6"
+            - label: Sonntag
+              value: "7"
+    forecast_cutoff_time:
+      name: Wetterbewertung bis
+      description: Bis zu dieser Uhrzeit wird die heutige stündliche Vorhersage ausgewertet.
+      default: "18:00:00"
+      selector:
+        time: {}
+    min_days_between_mows:
+      name: Mindestabstand in Tagen
+      description: Harte Zeitregel. Darunter wird nie gemäht.
+      default: 2
+      selector:
+        number:
+          min: 1
+          max: 14
+          step: 1
+          unit_of_measurement: Tage
+    target_max_days_between_mows:
+      name: Ziel-Maximalabstand in Tagen
+      description: Ab diesem Alter soll die KI normalerweise zum Mähen tendieren, außer Wetter/Rasen/Mäher wirken klar ungeeignet.
+      default: 7
+      selector:
+        number:
+          min: 2
+          max: 21
+          step: 1
+          unit_of_measurement: Tage
+    update_last_mowed_at_start:
+      name: „Zuletzt gemäht“ beim Start aktualisieren
+      description: Wenn aktiv, wird der Helfer direkt nach dem Startbefehl gesetzt. Wenn deaktiviert, brauchst du eine separate Abschluss-Automation.
+      default: true
+      selector:
+        boolean: {}
+
+mode: single
+
+trigger:
+  - platform: time
+    at: !input run_time
+
+variables:
+  weather_entity: !input weather_entity
+  last_mowed_helper: !input last_mowed_helper
+  weekdays: !input weekdays
+  forecast_cutoff_time: !input forecast_cutoff_time
+  min_days_between_mows: !input min_days_between_mows
+  target_max_days_between_mows: !input target_max_days_between_mows
+  use_area_switch: !input use_area_switch
+  update_last_mowed_at_start: !input update_last_mowed_at_start
+  mower_entity: !input mower_entity
+  battery_sensor: !input battery_sensor
+
+condition:
+  - condition: template
+    value_template: "{{ now().isoweekday() | string in weekdays }}"
+  - condition: state
+    entity_id: !input mower_entity
+    state: docked
+  - condition: numeric_state
+    entity_id: !input battery_sensor
+    above: !input minimum_battery_percent
+
+action:
+  - action: weather.get_forecasts
+    target:
+      entity_id: !input weather_entity
+    data:
+      type: hourly
+    response_variable: wetter
+
+  - variables:
+      forecast: "{{ wetter[weather_entity].forecast | default([]) }}"
+      cutoff: "{{ today_at(forecast_cutoff_time) }}"
+      relevante_stunden: >-
+        {{ forecast
+           | selectattr('datetime', 'defined')
+           | selectattr('datetime', '>=', now().isoformat())
+           | selectattr('datetime', '<=', cutoff.isoformat())
+           | list }}
+      regen_mm_bis_cutoff: >-
+        {{ relevante_stunden
+           | map(attribute='precipitation')
+           | map('float', 0)
+           | sum }}
+      regenwahrscheinlichkeit_max: >-
+        {{ relevante_stunden
+           | map(attribute='precipitation_probability')
+           | map('float', 0)
+           | max(default=0) }}
+      regnerische_stunden: >-
+        {{ relevante_stunden
+           | selectattr('precipitation', 'defined')
+           | selectattr('precipitation', '>', 0.2)
+           | list
+           | count }}
+      letzte_mahd: "{{ states(last_mowed_helper) }}"
+      tage_seit_letzter_mahd: >-
+        {% set ts = as_timestamp(states(last_mowed_helper), 0) %}
+        {% if ts == 0 %}999{% else %}{{ ((as_timestamp(now()) - ts) / 86400) | round(1) }}{% endif %}
+
+  - condition: template
+    value_template: "{{ tage_seit_letzter_mahd | float(0) >= min_days_between_mows | float(2) }}"
+
+  - action: ai_task.generate_data
+    metadata: {}
+    data:
+      task_name: yuka_flaeche_maehentscheidung
+      instructions: >-
+        Entscheide, ob der Mammotion Yuka jetzt die konfigurierte Fläche mähen soll.
+        Antworte strikt als JSON mit den Feldern should_mow_boolean und reason.
+        Regeln:
+        - Harte Zeitregel: Mähen nie, wenn weniger als {{ min_days_between_mows }} Tage seit letzter Mahd vergangen sind.
+        - Harte Zielregel: Ziel ist, spätestens am Tag {{ target_max_days_between_mows }} wieder zu mähen.
+        - Es gibt bewusst keine festen Regen-Grenzwerte. Bewerte Regenmenge, Regenwahrscheinlichkeit,
+          Anzahl regnerischer Stunden, aktuellen Status und Akku ganzheitlich.
+        - Zwischen Tag {{ min_days_between_mows }} und Tag {{ target_max_days_between_mows - 1 }} sollst du frei entscheiden,
+          ob heute ein sinnvoller Mäh-Tag ist.
+        - Ab Tag {{ target_max_days_between_mows }} soll should_mow_boolean normalerweise true sein,
+          außer das Wetter ist nach deiner Bewertung klar ungeeignet oder riskant für den Mäher/Rasen.
+        - Bevorzuge trockene Zeitfenster und PV-freundliches Mähen tagsüber,
+          aber triff die Entscheidung qualitativ statt anhand fester Wetter-Limits.
+        Daten:
+        Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}
+        Letzte Mahd: {{ letzte_mahd }}
+        Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm
+        Maximale Regenwahrscheinlichkeit bis {{ forecast_cutoff_time }}: {{ regenwahrscheinlichkeit_max }} %
+        Regnerische Stunden bis {{ forecast_cutoff_time }}: {{ regnerische_stunden }}
+        Aktueller Mäher-Status: {{ states(mower_entity) }}
+        Akku: {{ states(battery_sensor) }} %
+    response_variable: answer
+
+  - condition: template
+    value_template: >-
+      {% set raw = answer.data if answer is defined and answer.data is defined else answer %}
+      {% set text = raw | string | lower %}
+      {{ 'should_mow_boolean' in text and 'true' in text }}
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ use_area_switch | bool }}"
+        sequence:
+          - action: switch.turn_on
+            target:
+              entity_id: !input area_switch
+          - delay: "00:00:05"
+
+  - action: button.press
+    target:
+      entity_id: !input start_button
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ update_last_mowed_at_start | bool }}"
+        sequence:
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: !input last_mowed_helper
+            data:
+              datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
