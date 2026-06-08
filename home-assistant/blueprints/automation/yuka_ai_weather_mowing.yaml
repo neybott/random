@@ -167,12 +167,13 @@ action:
 
   - variables:
       forecast: "{{ wetter[weather_entity].forecast | default([]) }}"
-      cutoff: "{{ today_at(forecast_cutoff_time) }}"
+      now_iso: "{{ now().isoformat() }}"
+      cutoff_iso: "{{ today_at(forecast_cutoff_time).isoformat() }}"
       relevante_stunden: >-
         {{ forecast
            | selectattr('datetime', 'defined')
-           | selectattr('datetime', '>=', now().isoformat())
-           | selectattr('datetime', '<=', cutoff.isoformat())
+           | selectattr('datetime', '>=', now_iso)
+           | selectattr('datetime', '<=', cutoff_iso)
            | list }}
       regen_mm_bis_cutoff: >-
         {{ relevante_stunden
