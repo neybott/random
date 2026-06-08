@@ -150,18 +150,27 @@ blueprint:
         boolean: {}
     ai_reason_notification_service:
       name: Benachrichtigungs-Service für KI-Begründung
-      description: Notify-Service für die KI-Begründung. Als feste Dropdown-Liste definiert, damit Home Assistant kein Textfeld anzeigt.
+      description: >-
+        Notify-Service für die KI-Begründung. Home Assistant stellt select/mode: dropdown
+        als Combobox mit Such-Textfeld dar; deshalb ist dies absichtlich als Liste
+        konfiguriert, damit kein freies Textfeld angezeigt wird.
       default: notify.mobile_app_david_handy
       selector:
         select:
-          mode: dropdown
+          mode: list
           options:
-            - notify.mobile_app_david_handy
-            - notify.mobile_app_gabi_handy
-            - notify.mobile_app_galaxy_watch4_classic_atjx
-            - notify.mobile_app_sm_t580
-            - notify.notify
-            - notify.persistent_notification
+            - label: David Handy
+              value: notify.mobile_app_david_handy
+            - label: Gabi Handy
+              value: notify.mobile_app_gabi_handy
+            - label: Galaxy Watch4 Classic
+              value: notify.mobile_app_galaxy_watch4_classic_atjx
+            - label: SM-T580
+              value: notify.mobile_app_sm_t580
+            - label: Notify Standard
+              value: notify.notify
+            - label: Permanente Benachrichtigung
+              value: notify.persistent_notification
 
 mode: single
 
