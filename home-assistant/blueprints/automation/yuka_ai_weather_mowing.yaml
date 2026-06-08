@@ -113,6 +113,16 @@ blueprint:
           max: 14
           step: 1
           unit_of_measurement: Tage
+    ideal_days_between_mows:
+      name: Idealer Abstand in Tagen
+      description: Ab diesem Alter ist Mähen bevorzugt sinnvoll, wenn Wetter/Rasen/Mäher passen. Muss sinnvollerweise zwischen Mindest- und Maximalabstand liegen.
+      default: 3
+      selector:
+        number:
+          min: 2
+          max: 21
+          step: 1
+          unit_of_measurement: Tage
     target_max_days_between_mows:
       name: Ziel-Maximalabstand in Tagen
       description: Ab diesem Alter soll die KI normalerweise zum Mähen tendieren, außer Wetter/Rasen/Mäher wirken klar ungeeignet.
@@ -154,6 +164,7 @@ variables:
   weekdays: !input weekdays
   forecast_cutoff_time: !input forecast_cutoff_time
   min_days_between_mows: !input min_days_between_mows
+  ideal_days_between_mows: !input ideal_days_between_mows
   target_max_days_between_mows: !input target_max_days_between_mows
   dry_run: !input dry_run
   notify_ai_reason: !input notify_ai_reason
@@ -226,16 +237,22 @@ action:
         Regeln:
         - Harte Zeitregel: Mähen nie, wenn weniger als {{ min_days_between_mows }} Tage seit letzter Mahd vergangen sind.
         - Harte Zielregel: Ziel ist, spätestens am Tag {{ target_max_days_between_mows }} wieder zu mähen.
+        - Idealer Abstand: {{ ideal_days_between_mows }} Tage. Vor dem Idealabstand sollst du zurückhaltender sein;
+          ab dem Idealabstand soll Mähen bevorzugt werden, wenn Wetter/Rasen/Mäher passend wirken.
         - Es gibt bewusst keine festen Regen-Grenzwerte. Bewerte Regenmenge, Regenwahrscheinlichkeit,
           Anzahl regnerischer Stunden, aktuellen Status und Akku ganzheitlich.
-        - Zwischen Tag {{ min_days_between_mows }} und Tag {{ target_max_days_between_mows - 1 }} sollst du frei entscheiden,
-          ob heute ein sinnvoller Mäh-Tag ist.
+        - Zwischen Tag {{ min_days_between_mows }} und Tag {{ ideal_days_between_mows - 1 }} darfst du mähen, aber nur wenn es klar sinnvoll ist.
+        - Zwischen Tag {{ ideal_days_between_mows }} und Tag {{ target_max_days_between_mows - 1 }} sollst du bevorzugt mähen,
+          wenn keine guten Gründe dagegen sprechen.
         - Ab Tag {{ target_max_days_between_mows }} soll should_mow_boolean normalerweise true sein,
           außer das Wetter ist nach deiner Bewertung klar ungeeignet oder riskant für den Mäher/Rasen.
         - Bevorzuge trockene Zeitfenster und PV-freundliches Mähen tagsüber,
           aber triff die Entscheidung qualitativ statt anhand fester Wetter-Limits.
         Daten:
         Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}
+        Mindestabstand: {{ min_days_between_mows }} Tage
+        Idealer Abstand: {{ ideal_days_between_mows }} Tage
+        Ziel-Maximalabstand: {{ target_max_days_between_mows }} Tage
         Letzte Mahd: {{ letzte_mahd }}
         Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm
         Maximale Regenwahrscheinlichkeit bis {{ forecast_cutoff_time }}: {{ regenwahrscheinlichkeit_max }} %
@@ -272,7 +289,7 @@ action:
               message: >-
                 Entscheidung: {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}.
                 Begründung: {{ ai_reason }}
-                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}.
+                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }} (ideal: {{ ideal_days_between_mows }}, max: {{ target_max_days_between_mows }}).
                 Regen bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm,
                 max. Wahrscheinlichkeit: {{ regenwahrscheinlichkeit_max }} %,
                 regnerische Stunden: {{ regnerische_stunden }}.
@@ -293,7 +310,7 @@ action:
               message: >-
                 Dry Run ist aktiv. Der Mäher wurde nicht gestartet und der Helfer wurde nicht aktualisiert.
                 KI-Entscheidung: Mähen wäre jetzt gestartet worden.
-                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}.
+                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }} (ideal: {{ ideal_days_between_mows }}, max: {{ target_max_days_between_mows }}).
                 Letzte Mahd: {{ letzte_mahd }}.
                 Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm.
                 Maximale Regenwahrscheinlichkeit bis {{ forecast_cutoff_time }}: {{ regenwahrscheinlichkeit_max }} %.
