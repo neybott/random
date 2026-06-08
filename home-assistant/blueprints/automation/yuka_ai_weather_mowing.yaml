@@ -123,6 +123,12 @@ blueprint:
           max: 21
           step: 1
           unit_of_measurement: Tage
+    dry_run:
+      name: Dry Run / nur testen
+      description: Wenn aktiv, trifft die KI die Entscheidung, aber der Mäher wird nicht gestartet und der „zuletzt gemäht“-Helfer wird nicht aktualisiert. Stattdessen wird eine permanente Home-Assistant-Benachrichtigung erstellt, wenn gemäht worden wäre.
+      default: false
+      selector:
+        boolean: {}
 
 mode: single
 
@@ -137,6 +143,7 @@ variables:
   forecast_cutoff_time: !input forecast_cutoff_time
   min_days_between_mows: !input min_days_between_mows
   target_max_days_between_mows: !input target_max_days_between_mows
+  dry_run: !input dry_run
   mower_entity: !input mower_entity
   battery_sensor: !input battery_sensor
 
@@ -226,12 +233,33 @@ action:
       {% set text = raw | string | lower %}
       {{ 'should_mow_boolean' in text and 'true' in text }}
 
-  - action: button.press
-    target:
-      entity_id: !input start_button
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ dry_run | bool }}"
+        sequence:
+          - action: persistent_notification.create
+            data:
+              title: "Yuka Dry Run: Mähen würde gestartet"
+              notification_id: yuka_ai_mowing_dry_run
+              message: >-
+                Dry Run ist aktiv. Der Mäher wurde nicht gestartet und der Helfer wurde nicht aktualisiert.
+                KI-Entscheidung: Mähen wäre jetzt gestartet worden.
+                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}.
+                Letzte Mahd: {{ letzte_mahd }}.
+                Regenmenge bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm.
+                Maximale Regenwahrscheinlichkeit bis {{ forecast_cutoff_time }}: {{ regenwahrscheinlichkeit_max }} %.
+                Regnerische Stunden bis {{ forecast_cutoff_time }}: {{ regnerische_stunden }}.
+                Mäher-Status: {{ states(mower_entity) }}.
+                Akku: {{ states(battery_sensor) }} %.
+                Rohantwort der KI: {{ answer.data if answer is defined and answer.data is defined else answer }}
+    default:
+      - action: button.press
+        target:
+          entity_id: !input start_button
 
-  - action: input_datetime.set_datetime
-    target:
-      entity_id: !input last_mowed_helper
-    data:
-      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: !input last_mowed_helper
+        data:
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
