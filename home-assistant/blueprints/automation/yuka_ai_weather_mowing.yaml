@@ -129,6 +129,18 @@ blueprint:
       default: false
       selector:
         boolean: {}
+    notify_ai_reason:
+      name: KI-Begründung als Benachrichtigung senden
+      description: Wenn aktiv, wird nach jeder KI-Entscheidung eine Benachrichtigung mit Entscheidung und reason gesendet, auch wenn nicht gemäht wird.
+      default: false
+      selector:
+        boolean: {}
+    ai_reason_notification_service:
+      name: Benachrichtigungs-Service für KI-Begründung
+      description: Notify-Service, z. B. notify.mobile_app_david_handy. Leer lassen, wenn keine Benachrichtigung gesendet werden soll.
+      default: ""
+      selector:
+        text: {}
 
 mode: single
 
@@ -144,6 +156,8 @@ variables:
   min_days_between_mows: !input min_days_between_mows
   target_max_days_between_mows: !input target_max_days_between_mows
   dry_run: !input dry_run
+  notify_ai_reason: !input notify_ai_reason
+  ai_reason_notification_service: !input ai_reason_notification_service
   mower_entity: !input mower_entity
   battery_sensor: !input battery_sensor
 
@@ -230,11 +244,42 @@ action:
         Akku: {{ states(battery_sensor) }} %
     response_variable: answer
 
+  - variables:
+      ai_raw_response: "{{ answer.data if answer is defined and answer.data is defined else answer }}"
+      ai_response_text: "{{ ai_raw_response | string }}"
+      ai_response_text_lc: "{{ ai_response_text | lower }}"
+      ai_should_mow: "{{ 'should_mow_boolean' in ai_response_text_lc and 'true' in ai_response_text_lc }}"
+      ai_reason: >-
+        {% set raw = ai_response_text | trim %}
+        {% if '"reason"' in raw and ':' in raw.split('"reason"', 1)[1] %}
+          {% set after_reason = raw.split('"reason"', 1)[1].split(':', 1)[1] %}
+          {{ after_reason.rsplit('}', 1)[0] | trim | trim(',') | trim | trim('"') }}
+        {% elif 'reason:' in raw | lower %}
+          {{ raw.split(':', 1)[1] | trim }}
+        {% else %}
+          {{ raw }}
+        {% endif %}
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >-
+              {{ notify_ai_reason | bool and (ai_reason_notification_service | string | trim) != '' }}
+        sequence:
+          - action: "{{ ai_reason_notification_service }}"
+            data:
+              title: "Yuka KI-Mähentscheidung"
+              message: >-
+                Entscheidung: {% if ai_should_mow | bool %}Mähen{% else %}Nicht mähen{% endif %}.
+                Begründung: {{ ai_reason }}
+                Tage seit letzter Mahd: {{ tage_seit_letzter_mahd }}.
+                Regen bis {{ forecast_cutoff_time }}: {{ regen_mm_bis_cutoff }} mm,
+                max. Wahrscheinlichkeit: {{ regenwahrscheinlichkeit_max }} %,
+                regnerische Stunden: {{ regnerische_stunden }}.
+                Akku: {{ states(battery_sensor) }} %.
+
   - condition: template
-    value_template: >-
-      {% set raw = answer.data if answer is defined and answer.data is defined else answer %}
-      {% set text = raw | string | lower %}
-      {{ 'should_mow_boolean' in text and 'true' in text }}
+    value_template: "{{ ai_should_mow | bool }}"
 
   - choose:
       - conditions:
@@ -255,7 +300,8 @@ action:
                 Regnerische Stunden bis {{ forecast_cutoff_time }}: {{ regnerische_stunden }}.
                 Mäher-Status: {{ states(mower_entity) }}.
                 Akku: {{ states(battery_sensor) }} %.
-                Rohantwort der KI: {{ answer.data if answer is defined and answer.data is defined else answer }}
+                KI-Begründung: {{ ai_reason }}.
+                Rohantwort der KI: {{ ai_raw_response }}
     default:
       - action: button.press
         target:
