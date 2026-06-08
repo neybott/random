@@ -55,19 +55,6 @@ blueprint:
       selector:
         entity:
           domain: button
-    use_area_switch:
-      name: Bereich-Schalter vor dem Start einschalten
-      description: Optional, falls dein Mammotion-Setup vor dem Aufgabenstart einen Bereich-Schalter benötigt.
-      default: false
-      selector:
-        boolean: {}
-    area_switch:
-      name: Bereich-Schalter
-      description: Optionaler Bereich-Schalter, z. B. Area 1 / Vorne.
-      default: switch.yuka_bereich_vorne
-      selector:
-        entity:
-          domain: switch
     run_time:
       name: Startzeit
       description: Uhrzeit, zu der die Entscheidung täglich geprüft wird.
@@ -129,12 +116,6 @@ blueprint:
           max: 21
           step: 1
           unit_of_measurement: Tage
-    update_last_mowed_at_start:
-      name: „Zuletzt gemäht“ beim Start aktualisieren
-      description: Wenn aktiv, wird der Helfer direkt nach dem Startbefehl gesetzt. Wenn deaktiviert, brauchst du eine separate Abschluss-Automation.
-      default: true
-      selector:
-        boolean: {}
 
 mode: single
 
@@ -149,8 +130,6 @@ variables:
   forecast_cutoff_time: !input forecast_cutoff_time
   min_days_between_mows: !input min_days_between_mows
   target_max_days_between_mows: !input target_max_days_between_mows
-  use_area_switch: !input use_area_switch
-  update_last_mowed_at_start: !input update_last_mowed_at_start
   mower_entity: !input mower_entity
   battery_sensor: !input battery_sensor
 
@@ -239,27 +218,12 @@ action:
       {% set text = raw | string | lower %}
       {{ 'should_mow_boolean' in text and 'true' in text }}
 
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ use_area_switch | bool }}"
-        sequence:
-          - action: switch.turn_on
-            target:
-              entity_id: !input area_switch
-          - delay: "00:00:05"
-
   - action: button.press
     target:
       entity_id: !input start_button
 
-  - choose:
-      - conditions:
-          - condition: template
-            value_template: "{{ update_last_mowed_at_start | bool }}"
-        sequence:
-          - action: input_datetime.set_datetime
-            target:
-              entity_id: !input last_mowed_helper
-            data:
-              datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: !input last_mowed_helper
+    data:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
