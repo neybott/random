@@ -181,10 +181,12 @@ action:
            | map('float', 0)
            | sum }}
       regenwahrscheinlichkeit_max: >-
-        {{ relevante_stunden
-           | map(attribute='precipitation_probability')
-           | map('float', 0)
-           | max(default=0) }}
+        {% set ns = namespace(max=0) %}
+        {% for stunde in relevante_stunden %}
+          {% set wert = stunde.precipitation_probability | default(0) | float(0) %}
+          {% if wert > ns.max %}{% set ns.max = wert %}{% endif %}
+        {% endfor %}
+        {{ ns.max }}
       regnerische_stunden: >-
         {{ relevante_stunden
            | selectattr('precipitation', 'defined')
