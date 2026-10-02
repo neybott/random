@@ -329,7 +329,7 @@
   }
 
   function activeStatus(row, cutoffDate, checkMembershipDates = true) {
-    if (clean(row.Archivierungsdatum)) return { active: false, reason: "archived" };
+    if (clean(row.Archivierungsdatum) || clean(row.Archivierungsgrund)) return { active: false, reason: "archived" };
     if (isTestUser(row)) return { active: false, reason: "testUser" };
     if (!checkMembershipDates) return { active: true, invalidMembershipDate: false };
     const joinedRaw = clean(row.Beitrittsdatum);
