@@ -190,7 +190,7 @@
             <small>Für die taggenaue Altersberechnung: <strong id="cutoffDisplay"></strong></small>
           </div>
           <div class="setting">
-            <label class="toggle"><input id="activeOnly" type="checkbox" checked><span><strong>Nur aktive Mitglieder am Stichtag zählen</strong><small>Archivierte Datensätze sowie Personen vor dem Beitrittsdatum oder nach dem Austrittsdatum werden nicht gezählt. Leere Datumsfelder bleiben aktiv.</small></span></label>
+            <label class="toggle"><input id="activeOnly" type="checkbox" checked><span><strong>Beitritts- und Austrittsdatum berücksichtigen</strong><small>Archivierte Datensätze und Testuser werden immer ausgeschlossen. Bei aktivierter Option zählen außerdem Personen vor dem Beitrittsdatum oder nach dem Austrittsdatum nicht. Leere Datumsfelder bleiben aktiv.</small></span></label>
           </div>
         </div>
         <div class="rule-note"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z"/><path d="M12 11v5M12 7.5v.1"/></svg><span><strong>Unterstützende</strong> werden anhand der Felder „Unterstützende Mitgliedschaft“, „Aktive Mitgliedschaften“ oder „Mitgliedsbeiträge“ erkannt und ausschließlich in der Zeile „Unterstützende“ gezählt.</span></div>
@@ -321,8 +321,17 @@
       .some(value => normalized(value).includes("unterstutz"));
   }
 
-  function activeStatus(row, cutoffDate) {
+  function isTestUser(row) {
+    return normalized(row["Aktive Rollen"])
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+      .includes("testuser");
+  }
+
+  function activeStatus(row, cutoffDate, checkMembershipDates = true) {
     if (clean(row.Archivierungsdatum)) return { active: false, reason: "archived" };
+    if (isTestUser(row)) return { active: false, reason: "testUser" };
+    if (!checkMembershipDates) return { active: true, invalidMembershipDate: false };
     const joinedRaw = clean(row.Beitrittsdatum);
     const leftRaw = clean(row.Austrittsdatum);
     const joined = parseDate(joinedRaw);
@@ -347,6 +356,7 @@
       unknownGender: 0,
       invalidMembershipDate: 0,
       excludedArchived: 0,
+      excludedTestUsers: 0,
       excludedNotJoined: 0,
       excludedLeft: 0
     };
@@ -355,17 +365,16 @@
     let excluded = 0;
 
     for (const row of rows) {
-      if (activeOnly) {
-        const status = activeStatus(row, cutoffDate);
-        if (!status.active) {
-          excluded++;
-          if (status.reason === "archived") diagnostics.excludedArchived++;
-          if (status.reason === "notJoined") diagnostics.excludedNotJoined++;
-          if (status.reason === "left") diagnostics.excludedLeft++;
-          continue;
-        }
-        if (status.invalidMembershipDate) diagnostics.invalidMembershipDate++;
+      const status = activeStatus(row, cutoffDate, activeOnly);
+      if (!status.active) {
+        excluded++;
+        if (status.reason === "archived") diagnostics.excludedArchived++;
+        if (status.reason === "testUser") diagnostics.excludedTestUsers++;
+        if (status.reason === "notJoined") diagnostics.excludedNotJoined++;
+        if (status.reason === "left") diagnostics.excludedLeft++;
+        continue;
       }
+      if (status.invalidMembershipDate) diagnostics.invalidMembershipDate++;
 
       const gender = normalizeGender(row.Geschlecht);
       if (!gender) {
@@ -627,6 +636,7 @@
     if (result.excluded) {
       const parts = [];
       if (d.excludedArchived) parts.push(`${d.excludedArchived} archiviert`);
+      if (d.excludedTestUsers) parts.push(`${d.excludedTestUsers} Testuser`);
       if (d.excludedNotJoined) parts.push(`${d.excludedNotJoined} noch nicht beigetreten`);
       if (d.excludedLeft) parts.push(`${d.excludedLeft} bereits ausgetreten`);
       items.push(`${result.excluded} wegen Status nicht gezählt (${parts.join(", ")}).`);
@@ -746,7 +756,7 @@
 
   window.__ASKOE_TEST__ = {
     AGE_GROUPS, parseDate, formatDate, calculateAge, ageBucket, normalizeGender,
-    isSupporting, activeStatus, calculateStatistics, parseCsv, matrixToObjects, tableRows
+    isSupporting, isTestUser, activeStatus, calculateStatistics, parseCsv, matrixToObjects, tableRows
   };
 })();
 </script>
