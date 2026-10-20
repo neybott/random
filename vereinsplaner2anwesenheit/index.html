@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vereinsplaner → Anwesenheitsliste</title>
+  <style>
+    :root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#173c34;background:#f3f6f1;--green:#246c56;--ink:#173c34;--muted:#64796f;--line:#dbe4dc;--lime:#deed99}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;min-width:320px}button,input,select{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button,input,select{accent-color:var(--green)}:focus-visible{outline:3px solid #8dbb72;outline-offset:3px}button{border:1px solid #cad9cd;background:white;border-radius:9px;padding:10px 14px;font-size:12px;font-weight:650}button:hover:not(:disabled){background:#edf5e8;border-color:#91b396}.primary{background:var(--green);border-color:var(--green);color:white}.primary:hover:not(:disabled){background:#1a5542}.quiet{border:0;background:transparent;color:var(--green)}header,main,footer{max-width:1220px;margin:auto;padding-left:28px;padding-right:28px}header{display:flex;align-items:center;justify-content:space-between;padding-top:26px;padding-bottom:26px}.brand{display:flex;align-items:center;gap:12px}.mark{display:grid;place-items:center;width:42px;height:42px;background:var(--ink);color:var(--lime);border-radius:12px;font-size:25px}.brand strong{display:block;font-size:15px}.brand small{display:block;margin-top:4px;color:var(--muted);font-size:11px}.privacy{font-size:11px;color:var(--green);border:1px solid var(--line);border-radius:30px;padding:9px 12px}.intro{margin:28px 0 32px;display:flex;align-items:end;justify-content:space-between;gap:28px}.eyebrow{font-size:10px;font-weight:750;letter-spacing:.17em;color:var(--green);text-transform:uppercase}h1{font-size:clamp(34px,4.4vw,54px);letter-spacing:-.045em;line-height:1.08;margin:12px 0 14px}h1 span{color:var(--green)}.intro p{color:var(--muted);font-size:14px;line-height:1.65;max-width:570px;margin:0}.format-tag{flex-shrink:0;padding:15px 19px;border-left:2px solid #b7c993;font-size:12px;line-height:1.8;color:var(--muted)}.format-tag strong{color:var(--ink)}.setup{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid var(--line);border-radius:17px;background:#fff;padding:23px}.panel-title{display:flex;align-items:center;gap:10px;margin-bottom:18px}.step{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#e8efdf;font-size:11px;font-weight:750;color:var(--green)}h2{font-size:16px;letter-spacing:-.015em;margin:0}.sub{color:var(--muted);font-size:11px;line-height:1.6}.drop{width:100%;min-height:129px;border:1px dashed #adc5ae;background:#f8faf5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}.drop strong{font-size:13px}.drop span{color:var(--muted);font-size:11px;font-weight:400}.drop .upload{font-size:24px;color:var(--green)}.drop.drag{background:#e8f1df;border-color:var(--green)}.file-card{display:flex;gap:12px;align-items:center;background:#f2f7ed;border:1px solid #dbe7d4;border-radius:10px;padding:16px;min-height:129px}.file-copy{min-width:0;flex:1}.file-copy strong{font-size:12px;overflow-wrap:anywhere}.file-copy small{display:block;margin-top:7px;font-size:11px;color:var(--muted)}.field{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:650}.field input,.field select,.filter-row input,.filter-row select,.mode select{border:1px solid #cbd9cc;border-radius:7px;padding:9px 10px;background:white;min-width:0;width:100%;font-size:12px}.date-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.title-field{margin-top:12px}.week-label{display:flex;justify-content:space-between;align-items:center;margin:16px 0 9px;font-size:11px;font-weight:650}.week-label button{padding:3px 6px;font-size:10px}.weekdays{display:flex;gap:6px}.weekday{flex:1;cursor:pointer;text-align:center;position:relative}.weekday input{position:absolute;opacity:0}.weekday span{display:block;padding:8px 0;border:1px solid #d7e1d3;border-radius:7px;color:var(--muted);font-size:11px}.weekday input:checked+span{background:#e8f1df;border-color:#a4c18c;color:var(--green);font-weight:750}.weekday input:focus-visible+span{outline:3px solid #8dbb72;outline-offset:2px}.option-line{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:15px}.option-line label{display:flex;align-items:center;gap:7px;font-size:11px}.option-line select{font-size:11px;border:1px solid #cad9cd;padding:7px;border-radius:7px;background:white;max-width:180px}.filters{margin-top:18px}.filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.filter-head .panel-title{margin-bottom:0}.actions{display:flex;gap:7px;flex-wrap:wrap}.mode{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--muted);margin:18px 0 12px}.mode select{width:auto}.filter-row{display:grid;grid-template-columns:1.15fr .8fr 1fr 36px;gap:9px;margin-top:8px;background:#f7f9f5;border:1px solid #e2e9de;border-radius:10px;padding:9px}.filter-row.incomplete{border-color:#d5ba74}.filter-row button{padding:4px;font-size:19px;border:0;background:transparent}.filter-empty{padding:18px;border:1px dashed #d0deca;border-radius:10px;font-size:12px;color:var(--muted);text-align:center}.filter-summary{display:flex;align-items:center;gap:9px;margin:17px 0 0;font-size:12px;color:var(--green)}.dot{width:7px;height:7px;border-radius:50%;background:#689c56;flex-shrink:0}.transfer{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:20px;padding-top:17px;border-top:1px solid #e8ede5}.transfer p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}.message{font-size:12px;line-height:1.6;margin:12px 0 0;color:var(--green);overflow-wrap:anywhere}.error{color:#9b422c;background:#fff3ec;padding:10px 12px;border-radius:8px}.preview{margin-top:30px}.preview-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 15px}.preview-heading h2{font-size:19px}.preview-heading p{margin:5px 0 0}.export-buttons{display:flex;gap:8px}.icon-button{display:grid;place-items:center;width:40px;height:38px;padding:9px;flex:0 0 40px}.icon-button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.preview-empty{padding:60px 20px;text-align:center;border:1px dashed #c9d6c4;border-radius:14px;color:var(--muted);font-size:13px}.paper-stage{padding:26px;background:#e5eadf;border-radius:15px;overflow:auto;max-height:900px}.sheet-frame{margin:0 auto 26px}.sheet-frame:last-child{margin-bottom:0}.sheet{width:297mm;height:210mm;position:relative;margin:0 auto 26px;background:white;color:#17221a;box-shadow:0 8px 24px #253f2314;overflow:hidden}.sheet:last-child{margin-bottom:0}.sheet-content{position:absolute;inset:5mm 10mm;display:flex;flex-direction:column;padding:0;transform-origin:top left}.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:7px;border-bottom:2px solid #344a38;flex-shrink:0}.sheet-heading{display:flex;align-items:baseline;gap:20px;flex:1;min-width:0}.sheet-club{font-size:18px;margin:0;color:#344a38;overflow-wrap:anywhere}.sheet h3{font-size:30px;letter-spacing:-.035em;margin:0;font-weight:700;white-space:nowrap;flex-shrink:0}.sheet-meta{text-align:right;font-size:12px;line-height:1.4;white-space:nowrap;flex-shrink:0}.attendance{margin-top:8px;border-collapse:collapse;width:100%;table-layout:fixed;flex:none;font-size:var(--row-font,11px)}.attendance th,.attendance td{border:1px solid #9aa695;padding:1px 5px;line-height:1.15}.attendance thead th{height:36px;background:#edf1e8;font-size:12px}.attendance th.name{text-align:left;font-size:14px}.attendance .date{white-space:nowrap;padding:5px 0}.attendance .vertical span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;letter-spacing:.015em}.attendance .vertical{height:78px}.attendance tbody tr{height:var(--row-height,26px)}.attendance td.name{font-weight:500;overflow-wrap:anywhere}.attendance td.name:empty::before{content:"\00a0"}.attendance .weekend{background:#f5f6f1}.attendance tbody tr:nth-child(even) td.name{background:#f7f9f4}.print-help{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 0}footer{padding-top:30px;padding-bottom:30px;display:flex;justify-content:space-between;gap:15px;color:#82917c;font-size:10px}.loading{opacity:.5;pointer-events:none}@media(max-width:760px){header,main,footer{padding-left:16px;padding-right:16px}.intro{margin-top:15px}.format-tag{display:none}.privacy{font-size:10px;padding:8px}.brand small{font-size:10px}.brand strong{font-size:12px}.setup{grid-template-columns:1fr}.panel{padding:18px}.filter-row{grid-template-columns:1fr 36px}.filter-row select:first-child{grid-column:1}.filter-row button{grid-column:2;grid-row:1/4}.filter-row select,.filter-row input{grid-column:1}.transfer{align-items:start;flex-direction:column}.paper-stage{padding:15px}.export-buttons{width:100%}.export-buttons button{flex:1}footer{flex-direction:column}.option-line{flex-wrap:wrap}}@page{size:A4 landscape;margin:5mm 10mm}@media print{html,body{background:white;margin:0;min-width:0;color:black}header,.intro,.setup,.filters,.preview-heading,.preview-empty,.print-help,footer{display:none!important}main,.preview,.paper-stage{display:block;margin:0;padding:0;max-width:none;background:none;border:0;overflow:visible;max-height:none}.sheet-frame{width:auto!important;height:auto!important;margin:0;break-inside:avoid;break-after:page;page-break-after:always}.sheet-frame:last-child{break-after:auto;page-break-after:auto}.sheet{width:277mm;height:200mm;margin:0;box-shadow:none;transform:none!important;break-inside:avoid}.sheet-content{inset:0;padding:0}.attendance{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+  </style>
+</head>
+<body>
+<header><div class="brand"><span class="mark" aria-hidden="true">▦</span><div><strong>Vereinsplaner → Anwesenheit</strong><small>Ein kleines Tool für den Vereinsalltag</small></div></div><span class="privacy">● &nbsp;Alles bleibt auf deinem Gerät</span></header>
+<main>
+  <section class="intro"><div><div class="eyebrow">Mitglieder rein. Monatsliste raus.</div><h1>Zusammen trainieren.<br><span>Anwesenheit festhalten.</span></h1><p>Deine Vereinsplaner-Liste wird zur übersichtlichen Anwesenheitsliste. Mitglieder filtern, Monate wählen und zum Abhaken ausdrucken.</p></div><div class="format-tag"><strong>A4 · Querformat</strong><br>20 Teilnehmer pro Seite · Monate getrennt</div></section>
+  <div class="setup">
+    <section class="panel"><div class="panel-title"><span class="step">01</span><h2>Mitgliederliste laden</h2></div><input id="fileInput" type="file" accept=".csv,.xlsx" hidden><button class="drop" id="dropZone" type="button"><span class="upload" aria-hidden="true">↥</span><strong>Datei auswählen oder hierher ziehen</strong><span>Vereinsplaner-Export · CSV oder XLSX · bis 10 MB</span></button><div class="file-card" id="fileCard" hidden><span class="upload" aria-hidden="true">▤</span><div class="file-copy"><strong id="fileName"></strong><small id="fileMeta"></small></div><button id="removeFile" type="button" aria-label="Datei entfernen">×</button></div><p id="fileError" class="message error" role="alert" hidden></p></section>
+    <section class="panel"><div class="panel-title"><span class="step">02</span><h2>Monate & Trainingstage</h2></div><div class="date-fields"><label class="field">Von Monat<input id="startMonth" type="month" min="1900-01" max="2100-12" required></label><label class="field">Bis Monat<input id="endMonth" type="month" min="1900-01" max="2100-12" required></label></div><label class="field title-field">Verein / Gruppe auf der Liste<input id="listTitle" type="text" maxlength="100" placeholder="z. B. BSC 70 Linz · Nachwuchs"></label><div class="week-label"><span>Wochentage</span><button id="allWeekdays" class="quiet" type="button">Alle Tage</button></div><div id="weekdays" class="weekdays" role="group" aria-label="Trainingstage"></div><div class="option-line"><label><input id="includeMiddleName" type="checkbox">Zweitnamen ergänzen</label><label>Sortierung <select id="sortOrder"><option value="lastName">Nachname, Vorname</option><option value="firstName">Vorname, Nachname</option><option value="source">Wie in der Datei</option></select></label></div><label class="field title-field">Zeilen pro Seite<input id="rowsPerPage" type="number" min="1" max="100" step="1" required></label><p id="dateError" class="message error" role="alert" hidden></p></section>
+  </div>
+  <section class="panel filters"><div class="filter-head"><div class="panel-title"><span class="step">03</span><h2>Wer kommt auf die Liste?</h2></div><div class="actions"><button id="youthFilter" type="button">Rolle: Nachwuchs</button><button id="clearFilters" class="quiet" type="button">Alle Mitglieder</button><button id="addFilter" class="primary" type="button">+ Filter hinzufügen</button></div></div><div class="mode"><label for="filterMode">Mitglieder berücksichtigen, wenn</label><select id="filterMode"><option value="all">alle Filter zutreffen (UND)</option><option value="any">ein Filter zutrifft (ODER)</option></select></div><div id="filterRows"></div><p id="filterEmpty" class="filter-empty">Alle Mitglieder sind ausgewählt. Füge bei Bedarf Filter für beliebige Quellfelder hinzu.</p><p class="filter-summary" aria-live="polite"><span class="dot"></span><span id="filterSummary">Noch keine Datei geladen.</span></p><div class="transfer"><p>Filter, Zeitraum und Layout werden automatisch lokal gespeichert.<br>Einstellungen als JSON mitnehmen und wieder importieren.</p><div class="actions"><button id="exportSettings" type="button">Einstellungen exportieren</button><button id="importSettings" type="button">Importieren</button><button id="resetSettings" class="quiet" type="button">Zurücksetzen</button></div></div><input id="settingsInput" type="file" accept=".json,application/json" hidden><p id="settingsMessage" class="message" role="status" hidden></p></section>
+  <section class="preview"><div class="preview-heading"><div><h2>Deine Monatslisten</h2><p id="previewSummary" class="sub">Die Druckvorschau erscheint nach dem Laden der Datei.</p></div><div class="export-buttons"><button id="exportCsv" type="button" disabled>CSV exportieren</button><button id="printButton" class="icon-button" type="button" title="Drucken" aria-label="Drucken" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z"/><path d="M17 11h.01"/></svg></button><button id="pdfButton" class="icon-button primary" type="button" title="PDF herunterladen" aria-label="PDF herunterladen" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H5v20h14V7zM14 2v5h5M12 10v7m-3-3 3 3 3-3"/></svg></button></div></div><p id="exportMessage" class="message" role="status" hidden></p><div id="previewEmpty" class="preview-empty">Bereit für deine erste Mitgliederliste.</div><div id="sheets" class="paper-stage" hidden></div><p class="print-help">Drucker-Symbol: A4 quer drucken (100 %, ohne Browser-Kopf-/Fußzeilen). PDF-Symbol: direkt herunterladen. Freie Zeilen bleiben zum handschriftlichen Ergänzen leer.</p></section>
+</main>
+<footer><span>Vereinsplaner → Anwesenheitsliste</span><span>Keine Uploads. Lokal im Browser nutzbar.</span></footer>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const clean=value=>String(value??'').trim();
+const STORAGE_KEY='vp2anwesenheit_settings', FORMAT='vereinsplaner2anwesenheit-settings', MAX_SIZE=10485760;
+const WEEKDAYS=[[1,'MO'],[2,'DI'],[3,'MI'],[4,'DO'],[5,'FR'],[6,'SA'],[0,'SO']];
+const FILTER_OPERATORS=[['contains','enthält'],['notContains','enthält nicht'],['equals','ist genau'],['notEquals','ist nicht'],['startsWith','beginnt mit'],['empty','ist leer'],['notEmpty','ist nicht leer']];
+const SOURCE_FIELDS=["Akademischer Titel","Mitgliedsnummer","Vorname","Zweitname","Nachname","Straße","Hausnummer","PLZ","Stadt/Ort","Land","Nationalität","Geschlecht","Geburtstag","E-Mail","Alternative E-Mail","Telefonnummer","Alternative Telefonnummer","Aktive Rollen","Beitrittsdatum","Austrittsdatum","Vereinsplaner-Account","Aktive Mitgliedschaften","Mitgliedsbeiträge","Offene Beiträge","Kontoinhaber","IBAN","BIC","Bank","Mandatsreferenz","Mandat akzeptiert am","Gruppenzugehörigkeit","Notizen","Archivierungsdatum","Archivierungsgrund","Kontaktpersonen","Bildrecht akzeptieren","ÖBV Spiellizenz bestellen","Studentenmitgliedschaft","Studentenspecial für 1. Jahr","Unterstützende Mitgliedschaft","Erwachsene Zweitverein","Familienmitgliedschaft","Erziehungsberechtigter"];
+function parseCsv(text){text=text.replace(/^\uFEFF/,"");let first=text.slice(0,text.search(/\r?\n|$/)),delimiter=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?";":",",rows=[],row=[],value="",quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(quoted){if(c==='"'&&text[i+1]==='"'){value+='"';i++}else if(c==='"')quoted=false;else value+=c}else if(c==='"')quoted=true;else if(c===delimiter){row.push(value);value=""}else if(c==='\n'){row.push(value.replace(/\r$/, ""));rows.push(row);row=[];value=""}else value+=c}if(value||row.length){row.push(value.replace(/\r$/, ""));rows.push(row)}return rows}
+function findEnd(view){for(let i=view.byteLength-22;i>=Math.max(0,view.byteLength-65557);i--)if(view.getUint32(i,true)===0x06054b50)return i;throw Error("Die XLSX-Datei ist beschädigt oder ungültig.")}
+async function unzip(buffer){let view=new DataView(buffer),decoder=new TextDecoder,end=findEnd(view),files=new Map,offset=view.getUint32(end+16,true),count=view.getUint16(end+10,true);for(let n=0;n<count;n++){if(view.getUint32(offset,true)!==0x02014b50)throw Error("Das Excel-Dateiverzeichnis konnte nicht gelesen werden.");let method=view.getUint16(offset+10,true),size=view.getUint32(offset+20,true),nameLen=view.getUint16(offset+28,true),extraLen=view.getUint16(offset+30,true),commentLen=view.getUint16(offset+32,true),local=view.getUint32(offset+42,true),name=decoder.decode(new Uint8Array(buffer,offset+46,nameLen)),localName=view.getUint16(local+26,true),localExtra=view.getUint16(local+28,true),start=local+30+localName+localExtra;files.set(name,{method,data:new Uint8Array(buffer,start,size)});offset+=46+nameLen+extraLen+commentLen}async function read(name){let file=files.get(name);if(!file)return null;if(file.method===0)return file.data;if(file.method!==8||typeof DecompressionStream==="undefined")throw Error("Das Excel-Kompressionsformat wird von diesem Browser nicht unterstützt.");let stream=new Blob([file.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));return new Uint8Array(await new Response(stream).arrayBuffer())}return{files,read}}
+async function parseXlsx(buffer){let zip=await unzip(buffer),decoder=new TextDecoder("utf-8"),shared=[],sharedData=await zip.read("xl/sharedStrings.xml");if(sharedData){let doc=new DOMParser().parseFromString(decoder.decode(sharedData),"application/xml");[...doc.getElementsByTagName("si")].forEach(si=>shared.push([...si.getElementsByTagName("t")].map(t=>t.textContent||"").join("")))}let sheetName="xl/worksheets/sheet1.xml";if(!zip.files.has(sheetName))sheetName=[...zip.files.keys()].find(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n));let data=sheetName&&await zip.read(sheetName);if(!data)throw Error("Die Excel-Datei enthält kein lesbares Tabellenblatt.");let doc=new DOMParser().parseFromString(decoder.decode(data),"application/xml"),rows=[];[...doc.getElementsByTagName("row")].forEach(node=>{let row=[];[...node.getElementsByTagName("c")].forEach(cell=>{let ref=cell.getAttribute("r")||"A1",letters=(ref.match(/[A-Z]+/i)||["A"])[0].toUpperCase(),column=0;for(let c of letters)column=column*26+c.charCodeAt(0)-64;column--;let type=cell.getAttribute("t"),v=cell.getElementsByTagName("v")[0]?.textContent||"";row[column]=type==="s"?(shared[Number(v)]??""):type==="inlineStr"?[...cell.getElementsByTagName("t")].map(t=>t.textContent||"").join(""):v});rows.push(row)});return rows}
+function matrixToObjects(matrix){if(!matrix.length)throw Error("Die Datei ist leer.");let headers=matrix[0].map(v=>clean(v).replace(/^\uFEFF/,"")),missing=["Vorname","Nachname"].filter(f=>!headers.includes(f));if(missing.length)throw Error(`Keine gültige Vereinsplaner-Liste: ${missing.join(" und ")} fehlt.`);return matrix.slice(1).map(values=>Object.fromEntries(headers.map((h,i)=>[h,values[i]??""]))).filter(row=>Object.values(row).some(v=>clean(v)))}
+async function parseFile(file){let ext=file.name.split(".").pop().toLowerCase();if(!["csv","xlsx"].includes(ext))throw Error("Bitte eine CSV- oder XLSX-Datei auswählen.");if(file.size>MAX_SIZE)throw Error("Die Datei ist größer als 10 MB.");let buffer=await file.arrayBuffer(),matrix=ext==="csv"?parseCsv(new TextDecoder("utf-8").decode(buffer)):await parseXlsx(buffer);return matrixToObjects(matrix)}
+const defaults=()=>({startMonth:localMonth(),endMonth:localMonth(),title:'',weekdays:WEEKDAYS.map(([day])=>day),includeMiddleName:false,rowsPerPage:20,sortOrder:'lastName',filterMode:'all',filters:[]});
+function localMonth(){const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`}
+let state=loadSettings(),sourceRows=[],activeFile=null,matchedRows=[],months=[],busy=false;
+function validateSettings(data){
+  if(!data||data.format!==FORMAT||data.version!==1)throw Error('Keine gültige Anwesenheitslisten-Einstellungsdatei.');
+  const s=data.settings;
+  if(!s||!validMonth(s.startMonth)||!validMonth(s.endMonth)||typeof s.title!=='string'||s.title.length>100||typeof s.includeMiddleName!=='boolean'||!['lastName','firstName','source'].includes(s.sortOrder)||!['all','any'].includes(s.filterMode)||!Array.isArray(s.weekdays)||s.weekdays.some(day=>!Number.isInteger(day)||day<0||day>6)||!Array.isArray(s.filters)||s.filters.length>10||(s.rowsPerPage!==undefined&&(!Number.isInteger(s.rowsPerPage)||s.rowsPerPage<1||s.rowsPerPage>100)))throw Error('Die Einstellungen enthalten ungültige Werte.');
+  const filters=s.filters.map(filter=>{
+    if(!filter||typeof filter.field!=='string'||!filter.field.trim()||filter.field.length>150||!FILTER_OPERATORS.some(([op])=>op===filter.operator)||typeof filter.value!=='string'||filter.value.length>120)throw Error('Mindestens ein Filter ist ungültig.');
+    return {field:filter.field,operator:filter.operator,value:filter.value};
+  });
+  return {startMonth:s.startMonth,endMonth:s.endMonth,title:s.title,includeMiddleName:s.includeMiddleName,rowsPerPage:s.rowsPerPage??20,sortOrder:s.sortOrder,filterMode:s.filterMode,weekdays:[...new Set(s.weekdays)],filters};
+}
+function validMonth(value){return typeof value==='string'&&/^(19\d{2}|20\d{2}|2100)-(0[1-9]|1[0-2])$/.test(value)}
+function loadSettings(){
+  let raw;
+  try{raw=localStorage.getItem(STORAGE_KEY)}catch(_){}
+  if(raw){try{return validateSettings(JSON.parse(raw))}catch(_){}}
+  try{const cookie=document.cookie.split('; ').find(part=>part.startsWith(STORAGE_KEY+'='));if(cookie)return validateSettings(JSON.parse(decodeURIComponent(cookie.slice(STORAGE_KEY.length+1))))}catch(_){}
+  return defaults();
+}
+function settingsDocument(){return {format:FORMAT,version:1,settings:state}}
+function saveSettings(){
+  const value=JSON.stringify(settingsDocument());let saved=false;
+  try{localStorage.setItem(STORAGE_KEY,value);saved=true}catch(_){}
+  try{const encoded=encodeURIComponent(value);if(encoded.length<3800){document.cookie=`${STORAGE_KEY}=${encoded}; Max-Age=31536000; Path=/; SameSite=Lax`;saved=saved||document.cookie.includes(STORAGE_KEY+'=')}else document.cookie=`${STORAGE_KEY}=; Max-Age=0; Path=/; SameSite=Lax`}catch(_){}
+  if(!saved)showMessage('Der Browser blockiert die lokale Speicherung. Bitte Einstellungen als JSON exportieren.',true);
+}
+function showMessage(text,error=false){$('settingsMessage').textContent=text;$('settingsMessage').className='message'+(error?' error':'');$('settingsMessage').hidden=false}
+function node(tag,text,className){const element=document.createElement(tag);if(text!==undefined)element.textContent=text;if(className)element.className=className;return element}
+function availableFields(){return [...new Set([...SOURCE_FIELDS,...sourceRows.flatMap(row=>Object.keys(row)),...state.filters.map(filter=>filter.field)])]}
+function filterNeedsValue(filter){return !['empty','notEmpty'].includes(filter.operator)}
+function matchesFilter(row,filter){
+  const text=clean(row[filter.field]).toLocaleLowerCase('de'),value=clean(filter.value).toLocaleLowerCase('de');
+  switch(filter.operator){case 'empty':return text==='';case 'notEmpty':return text!=='';case 'equals':return text===value;case 'notEquals':return text!==value;case 'notContains':return !text.includes(value);case 'startsWith':return text.startsWith(value);default:return text.includes(value)}
+}
+function renderFilters(){
+  $('filterMode').value=state.filterMode;
+  $('filterRows').replaceChildren(...state.filters.map((filter,index)=>{
+    const row=node('div',undefined,'filter-row'),field=node('select'),operator=node('select'),input=node('input'),list=node('datalist'),remove=node('button','×');
+    field.setAttribute('aria-label',`Quellfeld Filter ${index+1}`);operator.setAttribute('aria-label',`Bedingung Filter ${index+1}`);input.setAttribute('aria-label',`Wert Filter ${index+1}`);
+    availableFields().forEach(key=>{const option=node('option',key);option.value=key;field.append(option)});field.value=filter.field;
+    FILTER_OPERATORS.forEach(([key,label])=>{const option=node('option',label);option.value=key;operator.append(option)});operator.value=filter.operator;
+    input.value=filter.value;input.maxLength=120;input.placeholder='Wert auswählen oder eingeben';input.hidden=!filterNeedsValue(filter);list.id=`values-${index}`;input.setAttribute('list',list.id);
+    [...new Set(sourceRows.map(row=>clean(row[filter.field])).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de')).slice(0,200).forEach(value=>{const option=node('option');option.value=value;list.append(option)});
+    remove.type='button';remove.setAttribute('aria-label',`Filter ${index+1} entfernen`);
+    field.onchange=()=>{filter.field=field.value;filter.value='';saveSettings();renderFilters();render()};
+    operator.onchange=()=>{filter.operator=operator.value;saveSettings();renderFilters();render()};
+    input.oninput=()=>{filter.value=input.value;saveSettings();render()};
+    remove.onclick=()=>{state.filters.splice(index,1);saveSettings();renderFilters();render()};
+    row.append(field,operator,input,list,remove);return row;
+  }));
+  $('filterEmpty').hidden=state.filters.length>0;$('addFilter').disabled=state.filters.length>=10;
+}
+function renderControls(){
+  $('rowsPerPage').value=state.rowsPerPage;
+  $('startMonth').value=state.startMonth;$('endMonth').value=state.endMonth;$('listTitle').value=state.title;$('includeMiddleName').checked=state.includeMiddleName;$('sortOrder').value=state.sortOrder;
+  $('weekdays').replaceChildren(...WEEKDAYS.map(([day,label])=>{const wrapper=node('label',undefined,'weekday'),input=node('input'),caption=node('span',label);input.type='checkbox';input.value=day;input.checked=state.weekdays.includes(day);input.setAttribute('aria-label',({MO:'Montag',DI:'Dienstag',MI:'Mittwoch',DO:'Donnerstag',FR:'Freitag',SA:'Samstag',SO:'Sonntag'})[label]);input.onchange=()=>{state.weekdays=[...$('weekdays').querySelectorAll('input:checked')].map(el=>Number(el.value));saveSettings();render()};wrapper.append(input,caption);return wrapper}));renderFilters();
+}
+function monthRange(){
+  if(!validMonth(state.startMonth)||!validMonth(state.endMonth))throw Error('Bitte einen gültigen Start- und Endmonat zwischen 1900 und 2100 auswählen.');
+  const ordinal=value=>{const [year,month]=value.split('-').map(Number);return year*12+month-1},start=ordinal(state.startMonth),end=ordinal(state.endMonth);
+  if(end<start)throw Error('Der Endmonat muss nach dem Startmonat liegen oder gleich sein.');
+  if(end-start>=24)throw Error('Bitte höchstens 24 Monate gleichzeitig auswählen.');
+  if(!state.weekdays.length)throw Error('Bitte mindestens einen Wochentag auswählen.');
+  return Array.from({length:end-start+1},(_,i)=>({year:Math.floor((start+i)/12),month:(start+i)%12}));
+}
+function monthLabel({year,month}){return new Intl.DateTimeFormat('de-AT',{month:'long',year:'numeric'}).format(new Date(year,month,1))}
+function datesForMonth({year,month}){return Array.from({length:new Date(year,month+1,0).getDate()},(_,i)=>new Date(year,month,i+1)).filter(date=>state.weekdays.includes(date.getDay()))}
+function dateLabel(date){return `${WEEKDAYS.find(([day])=>day===date.getDay())[1]} - ${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}`}
+function fullName(row){return [clean(row.Vorname),state.includeMiddleName?clean(row.Zweitname):'',clean(row.Nachname)].filter(Boolean).join(' ')}
+function pagesForMonths(monthList,rows,limit){
+  if(!Number.isInteger(limit)||limit<1||limit>100)throw Error('Bitte eine ganze Teilnehmerzahl pro Seite zwischen 1 und 100 eingeben.');
+  const count=Math.ceil(rows.length/limit);
+  return monthList.flatMap(month=>Array.from({length:count},(_,index)=>({month,rows:rows.slice(index*limit,(index+1)*limit),monthPage:index+1,monthPages:count})));
+}
+function render(){
+  let dateError='';try{pagesForMonths([],[],state.rowsPerPage);months=monthRange()}catch(error){months=[];dateError=error.message}
+  $('dateError').hidden=!dateError;$('dateError').textContent=dateError;
+  const active=state.filters.filter(filter=>!filterNeedsValue(filter)||clean(filter.value)),incomplete=state.filters.length-active.length;
+  [...$('filterRows').children].forEach((row,i)=>row.classList.toggle('incomplete',filterNeedsValue(state.filters[i])&&!clean(state.filters[i].value)));
+  matchedRows=sourceRows.filter(row=>!active.length||(state.filterMode==='any'?active.some(filter=>matchesFilter(row,filter)):active.every(filter=>matchesFilter(row,filter))));
+  if(state.sortOrder!=='source'){const keys=state.sortOrder==='firstName'?['Vorname','Nachname']:['Nachname','Vorname'];matchedRows.sort((a,b)=>clean(a[keys[0]]).localeCompare(clean(b[keys[0]]),'de',{numeric:true})||clean(a[keys[1]]).localeCompare(clean(b[keys[1]]),'de',{numeric:true}))}
+  const incompleteNote=incomplete?` · ${incomplete} unvollständige Filter ohne Wirkung (Wert ergänzen)`:'';
+  $('filterSummary').textContent=(activeFile?`${matchedRows.length} von ${sourceRows.length} Mitgliedern ausgewählt`:'Keine Datei geladen')+(active.length?` · ${active.length} ${active.length===1?'aktiver Filter':'aktive Filter'}`:' · Alle Mitglieder')+incompleteNote;
+  const noDates=months.filter(month=>datesForMonth(month).length===0),enabled=!!activeFile&&matchedRows.length>0&&months.length>0&&!noDates.length&&!busy;
+  $('printButton').disabled=!enabled;$('pdfButton').disabled=!enabled;$('exportCsv').disabled=!enabled;
+  $('sheets').hidden=!enabled;$('previewEmpty').hidden=enabled;
+  $('sheets').replaceChildren();
+  if(!enabled){const text=dateError||(!activeFile?'Bereit für deine erste Mitgliederliste.':!matchedRows.length?'Keine Mitglieder entsprechen den Filtern.':noDates.length?'In mindestens einem gewählten Monat gibt es keinen passenden Wochentag.':'Die Datei wird geladen …');$('previewEmpty').textContent=text;$('previewSummary').textContent='Noch keine druckbaren Monatslisten.';return}
+  const pages=pagesForMonths(months,matchedRows,state.rowsPerPage);
+  $('previewSummary').textContent=`${pages.length} ${pages.length===1?'Seite':'Seiten'} · ${months.length} ${months.length===1?'Monat':'Monate'} · ${matchedRows.length} Mitglieder · ${state.rowsPerPage} Zeilen pro Seite · A4 quer`;
+  $('sheets').append(...pages.map((page,index)=>makeSheet(page,index,pages.length)));
+  requestAnimationFrame(fitSheets);
+}
+function sheetRows(rows,limit){
+  return Array.from({length:limit},(_,index)=>rows[index]??null);
+}
+function makeSheet({month,rows,monthPage,monthPages},index,totalPages){
+  const tableRows=sheetRows(rows,state.rowsPerPage);
+  const dates=datesForMonth(month),sheet=node('article',undefined,'sheet'),content=node('div',undefined,'sheet-content'),head=node('div',undefined,'sheet-head'),heading=node('div',undefined,'sheet-heading'),meta=node('div',undefined,'sheet-meta');
+  sheet.setAttribute('aria-label',`Anwesenheitsliste ${monthLabel(month)}, Seite ${monthPage} von ${monthPages}`);
+  heading.append(node('h3',monthLabel(month)));if(state.title)heading.append(node('p',state.title,'sheet-club'));meta.append(node('div',`Seite ${index+1} / ${totalPages}`,'sheet-page'),node('div',`${rows.length} Mitglieder · ${dates.length} Termine`));head.append(heading,meta);
+  const table=node('table',undefined,'attendance'),colgroup=node('colgroup'),names=node('col'),thead=node('thead'),header=node('tr'),tbody=node('tbody');
+  table.setAttribute('aria-label',`Anwesenheit ${monthLabel(month)}`);table.style.setProperty('--row-height',`${Math.min(26,624/tableRows.length)}px`);table.style.setProperty('--row-font',`${Math.min(16,Math.max(4,480/Math.max(tableRows.length,1)*.82))}px`);
+  names.style.width='25%';colgroup.append(names);dates.forEach(()=>colgroup.append(node('col')));
+  const nameHeader=node('th','Vorname + Nachname','name');nameHeader.scope='col';header.append(nameHeader);
+  dates.forEach(date=>{const th=node('th',undefined,`date${dates.length>14?' vertical':''}${[0,6].includes(date.getDay())?' weekend':''}`);th.scope='col';th.append(node('span',dateLabel(date)));header.append(th)});thead.append(header);
+  tableRows.forEach(row=>{const tr=node('tr'),name=node('td',row?fullName(row):'','name');tr.append(name);dates.forEach(date=>tr.append(node('td','',[0,6].includes(date.getDay())?'weekend':undefined)));tbody.append(tr)});
+  table.append(colgroup,thead,tbody);content.append(head,table);sheet.append(content);const frame=node('div',undefined,'sheet-frame');frame.append(sheet);return frame;
+}
+function fitSheets(){
+  document.querySelectorAll('.sheet-content').forEach(content=>{
+    content.style.transform='';content.style.width='';content.style.height='';
+    const width=content.clientWidth,height=content.clientHeight;
+    // Large lists and unusually long names still stay on one physical page.
+    const scale=Math.min(1,width/content.scrollWidth,height/content.scrollHeight);
+    if(scale<1){content.style.width=`${width/scale}px`;content.style.height=`${height/scale}px`;content.style.transform=`scale(${scale})`}
+  });
+  const stage=$('sheets'),style=getComputedStyle(stage),available=stage.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+  document.querySelectorAll('.sheet-frame').forEach(frame=>{const sheet=frame.firstElementChild,scale=Math.min(1,available/sheet.offsetWidth);frame.style.width=`${sheet.offsetWidth*scale}px`;frame.style.height=`${sheet.offsetHeight*scale}px`;sheet.style.transformOrigin='top left';sheet.style.transform=`scale(${scale})`});
+}
+async function handleFile(file){
+  if(!file||busy)return;busy=true;$('dropZone').classList.add('loading');$('fileError').hidden=true;render();
+  try{const rows=await parseFile(file);sourceRows=rows;activeFile=file;$('fileName').textContent=file.name;$('fileMeta').textContent=`${rows.length} Mitglieder erkannt · ${(file.size/1024).toFixed(1)} KB`;$('dropZone').hidden=true;$('fileCard').hidden=false;renderFilters()}
+  catch(error){$('fileError').textContent=error.message||'Die Datei konnte nicht gelesen werden.';$('fileError').hidden=false}
+  finally{busy=false;$('dropZone').classList.remove('loading');$('fileInput').value='';render()}
+}
+function downloadFile(text,type,filename){const url=URL.createObjectURL(new Blob([text],{type})),link=node('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportSettings(){downloadFile(JSON.stringify(settingsDocument(),null,2)+'\n','application/json','vereinsplaner2anwesenheit-einstellungen.json');showMessage('Einstellungen exportiert. Die Datei enthält keine Mitgliederliste.')}
+async function importSettings(file){
+  if(!file)return;
+  try{if(file.size>102400)throw Error('Die Einstellungsdatei darf höchstens 100 KB groß sein.');let data;try{data=JSON.parse(await file.text())}catch(_){throw Error('Die JSON-Datei konnte nicht gelesen werden.')}const imported=validateSettings(data);state=imported;saveSettings();renderControls();render();showMessage('Einstellungen erfolgreich importiert.')}
+  catch(error){showMessage(error.message,true)}finally{$('settingsInput').value=''}
+}
+function exportCsv(){
+  if($('exportCsv').disabled)return;
+  const cell=value=>`"${String(value??'').replaceAll('"','""')}"`,lines=[];
+  months.forEach(month=>{const dates=datesForMonth(month);lines.push([monthLabel(month),state.title].map(cell).join(';'));lines.push(['Vorname + Nachname',...dates.map(dateLabel)].map(cell).join(';'));pagesForMonths([month],matchedRows,state.rowsPerPage).flatMap(page=>sheetRows(page.rows,state.rowsPerPage)).forEach(row=>lines.push([row?fullName(row):'',...dates.map(()=>'')].map(cell).join(';')));lines.push('')});
+  downloadFile('\uFEFF'+lines.join('\r\n'),'text/csv;charset=utf-8',`anwesenheit-${state.startMonth}${state.startMonth===state.endMonth?'':'-bis-'+state.endMonth}.csv`);
+}
+function canvasLines(context,text,maxWidth){
+  const lines=[];let current='';
+  for(const word of text.split(/\s+/)){
+    if(!word)continue;
+    const candidate=current?`${current} ${word}`:word;
+    if(context.measureText(candidate).width<=maxWidth){current=candidate;continue}
+    if(current){lines.push(current);current=''}
+    for(const char of word){if(current&&context.measureText(current+char).width>maxWidth){lines.push(current);current=''}current+=char}
+  }
+  if(current)lines.push(current);
+  return lines.length?lines:[''];
+}
+function sheetCanvas(sheet){
+  const bounds=sheet.getBoundingClientRect(),content=sheet.querySelector('.sheet-content'),textScale=content.getBoundingClientRect().width/content.offsetWidth,canvas=document.createElement('canvas');
+  canvas.width=Math.round(277/25.4*300);canvas.height=Math.round(200/25.4*300);
+  const context=canvas.getContext('2d');if(!context)throw Error('Der Browser unterstützt den PDF-Export nicht.');
+  context.scale(canvas.width/bounds.width,canvas.height/bounds.height);context.fillStyle='#fff';context.fillRect(0,0,bounds.width,bounds.height);
+  const box=element=>{const r=element.getBoundingClientRect();return {x:r.left-bounds.left,y:r.top-bounds.top,width:r.width,height:r.height}};
+  function text(element,{vertical=false,cell=false}={}){
+    const value=element.textContent;if(!value)return;
+    const style=getComputedStyle(element),rect=box(element),fontSize=parseFloat(style.fontSize)*textScale,padding=cell?parseFloat(style.paddingLeft)*textScale:0;
+    context.save();context.font=`${style.fontStyle} ${style.fontWeight} ${fontSize}px ${style.fontFamily}`;context.fillStyle=style.color;context.textBaseline='middle';
+    if('letterSpacing' in context)context.letterSpacing=style.letterSpacing==='normal'?'0px':`${parseFloat(style.letterSpacing)*textScale}px`;
+    if(cell){context.beginPath();context.rect(rect.x+1,rect.y+1,rect.width-2,rect.height-2);context.clip()}
+    if(vertical){context.translate(rect.x+rect.width/2,rect.y+rect.height/2);context.rotate(-Math.PI/2);context.textAlign='center';context.fillText(value,0,fontSize*.05)}
+    else{
+      const align=style.textAlign==='right'?'right':element.classList.contains('date')?'center':'left',lines=style.whiteSpace==='nowrap'?[value]:canvasLines(context,value,Math.max(1,rect.width-padding*2+1)),lineHeight=(parseFloat(style.lineHeight)||fontSize/textScale*1.15)*textScale;
+      context.textAlign=align;
+      const x=align==='right'?rect.x+rect.width-padding:align==='center'?rect.x+rect.width/2:rect.x+padding;
+      lines.forEach((line,i)=>context.fillText(line,x,rect.y+rect.height/2+(i-(lines.length-1)/2)*lineHeight+fontSize*.05));
+    }
+    context.restore();
+  }
+  sheet.querySelectorAll('.sheet-heading h3,.sheet-club,.sheet-meta>div').forEach(element=>text(element));
+  const head=box(sheet.querySelector('.sheet-head'));context.strokeStyle='#344a38';context.lineWidth=2*textScale;context.beginPath();context.moveTo(head.x,head.y+head.height-textScale);context.lineTo(head.x+head.width,head.y+head.height-textScale);context.stroke();
+  sheet.querySelectorAll('.attendance th,.attendance td').forEach(cell=>{
+    const rect=box(cell),style=getComputedStyle(cell);if(style.backgroundColor!=='rgba(0, 0, 0, 0)'&&style.backgroundColor!=='transparent'){context.fillStyle=style.backgroundColor;context.fillRect(rect.x,rect.y,rect.width,rect.height)}
+    context.strokeStyle=style.borderTopColor;context.lineWidth=textScale;context.strokeRect(rect.x,rect.y,rect.width,rect.height);
+    text(cell,{vertical:cell.classList.contains('vertical'),cell:true});
+  });
+  return canvas;
+}
+async function exportPdf(){
+  if($('pdfButton').disabled)return;
+  const message=$('exportMessage');message.hidden=true;
+  busy=true;for(const id of ['pdfButton','printButton','exportCsv'])$(id).disabled=true;$('pdfButton').setAttribute('aria-busy','true');
+  let printStyle;
+  try{
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+    if(!window.jspdf?.jsPDF)throw Error('Die lokale PDF-Bibliothek fehlt. Bitte den vollständigen Website-Ordner verwenden.');
+    printStyle=node('style');printStyle.textContent=[...document.styleSheets[0].cssRules].filter(rule=>rule.type===4&&rule.conditionText==='print').map(rule=>[...rule.cssRules].map(child=>child.cssText).join('\n')).join('\n');document.head.append(printStyle);fitSheets();
+    const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+    pdf.setProperties({title:`Anwesenheitsliste ${state.startMonth}${state.startMonth===state.endMonth?'':' bis '+state.endMonth}`,creator:'Vereinsplaner → Anwesenheitsliste'});
+    [...document.querySelectorAll('.sheet')].forEach((sheet,index)=>{if(index)pdf.addPage('a4','landscape');pdf.addImage(sheetCanvas(sheet),'PNG',10,5,277,200,undefined,'FAST')});
+    downloadFile(pdf.output('arraybuffer'),'application/pdf',`anwesenheit-${state.startMonth}${state.startMonth===state.endMonth?'':'-bis-'+state.endMonth}.pdf`);
+    message.textContent='PDF zum Herunterladen erstellt.';message.className='message';message.hidden=false;
+  }catch(error){message.textContent=error.message||'Die PDF-Datei konnte nicht erstellt werden.';message.className='message error';message.hidden=false}
+  finally{printStyle?.remove();busy=false;$('pdfButton').removeAttribute('aria-busy');render()}
+}
+$('dropZone').onclick=()=>$('fileInput').click();$('fileInput').onchange=()=>handleFile($('fileInput').files[0]);
+$('removeFile').onclick=()=>{if(busy)return;activeFile=null;sourceRows=[];$('fileInput').value='';$('fileCard').hidden=true;$('dropZone').hidden=false;$('fileError').hidden=true;renderFilters();render()};
+['dragenter','dragover'].forEach(event=>$('dropZone').addEventListener(event,e=>{e.preventDefault();$('dropZone').classList.add('drag')}));['dragleave','drop'].forEach(event=>$('dropZone').addEventListener(event,e=>{e.preventDefault();$('dropZone').classList.remove('drag')}));$('dropZone').addEventListener('drop',e=>handleFile(e.dataTransfer.files[0]));
+$('addFilter').onclick=()=>{if(state.filters.length>=10)return;state.filters.push({field:'Aktive Rollen',operator:'contains',value:''});saveSettings();renderFilters();render()};
+$('clearFilters').onclick=()=>{state.filters=[];saveSettings();renderFilters();render()};
+$('youthFilter').onclick=()=>{state.filters=[{field:'Aktive Rollen',operator:'contains',value:'Nachwuchs'}];state.filterMode='all';saveSettings();renderFilters();render()};
+$('filterMode').onchange=()=>{state.filterMode=$('filterMode').value;saveSettings();render()};
+['startMonth','endMonth','sortOrder'].forEach(id=>$(id).onchange=()=>{state[id]=$(id).value;saveSettings();render()});
+$('rowsPerPage').oninput=()=>{state.rowsPerPage=Number($('rowsPerPage').value);if(Number.isInteger(state.rowsPerPage)&&state.rowsPerPage>=1&&state.rowsPerPage<=100)saveSettings();render()};
+$('listTitle').oninput=()=>{state.title=$('listTitle').value;saveSettings();render()};$('includeMiddleName').onchange=()=>{state.includeMiddleName=$('includeMiddleName').checked;saveSettings();render()};
+$('allWeekdays').onclick=()=>{state.weekdays=WEEKDAYS.map(([day])=>day);saveSettings();renderControls();render()};
+$('exportSettings').onclick=exportSettings;$('importSettings').onclick=()=>$('settingsInput').click();$('settingsInput').onchange=()=>importSettings($('settingsInput').files[0]);
+$('resetSettings').onclick=()=>{state=defaults();saveSettings();renderControls();render();showMessage('Standard wiederhergestellt: alle Mitglieder, alle Wochentage, aktueller Monat, 20 Teilnehmer pro Seite.')};
+$('exportCsv').onclick=exportCsv;$('pdfButton').onclick=exportPdf;$('printButton').onclick=()=>{if($('printButton').disabled)return;fitSheets();const previous=document.title;document.title=`Anwesenheitsliste ${state.startMonth}${state.startMonth===state.endMonth?'':' bis '+state.endMonth}`;window.print();document.title=previous};
+window.addEventListener('resize',()=>requestAnimationFrame(fitSheets));
+window.addEventListener('beforeprint',fitSheets);window.addEventListener('afterprint',()=>requestAnimationFrame(fitSheets));
+renderControls();render();
+})();
+</script>
+</body>
+</html>
