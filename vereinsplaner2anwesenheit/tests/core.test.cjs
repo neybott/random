@@ -113,10 +113,23 @@ test('additional columns surround the requested weekdays in stable order',()=>{
   const api=app(),settings={...plain(api.defaults()),weekdays:[2],customColumns:[{label:'Bezahlt',position:'before'},{label:'Notiz',position:'after'},{label:'Test',position:'before'},{label:' ',position:'after'}]},cols=api.columnsForMonth({year:2026,month:9},settings);
   assert.deepEqual(plain(cols.slice(0,2).map(column=>column.label)),['Bezahlt','Test']);assert.equal(cols.at(-1).label,'Notiz');assert.equal(cols.filter(column=>column.kind==='date').length,4);assert.ok(cols.some(column=>column.label==='DI - 20.10'));
 });
-test('section grouping paginates without orphan headings, lost people or shrunken rows',()=>{
-  const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupOrder:['Trainer','Beginner','Intermediate','Advanced']},rows=Array.from({length:55},(_,id)=>({id,'Aktive Rollen':settings.groupOrder[Math.floor(id/14)]})),months=[{year:2026,month:9},{year:2026,month:10}],pages=api.listPages(months,rows,settings);
-  for(const month of months){const selected=pages.filter(page=>page.month===month);assert.deepEqual(plain(selected.flatMap(page=>page.rows)),rows);assert.ok(selected.length>2);for(const page of selected){assert.equal(page.layout.rowHeight,26);assert.ok(page.rows.length<=24);assert.equal(page.entries[0].type,'group');assert.ok(page.used<=page.layout.bodyBudget);page.entries.forEach((entry,index)=>{if(entry.type==='group')assert.ok(page.entries[index+1]?.row)});}}
-  assert.ok(pages.some(page=>page.entries.some(entry=>entry.continued)));
+test('compact grouping fills every page and marks transitions without extra rows',()=>{
+  const api=app(),months=[{year:2026,month:9},{year:2026,month:10}],order=['Trainer','Beginner','Intermediate','Advanced'];
+  for(const orientation of ['landscape','portrait'])for(const count of [20,24,25,48,55]){
+    const settings={...plain(api.defaults()),orientation,rowsPerPage:24,groupBy:'Aktive Rollen',groupOrder:order};
+    const rows=Array.from({length:count},(_,id)=>({id,'Aktive Rollen':order[id%4]})),expected=api.groupMembers(rows,settings.groupBy,order).flatMap(group=>group.rows),pages=api.listPages(months,rows,settings);
+    for(const month of months){
+      const selected=pages.filter(page=>page.month===month);assert.equal(selected.length,Math.ceil(count/24));assert.deepEqual(plain(selected.flatMap(page=>page.rows)),plain(expected));
+      for(const page of selected){
+        assert.equal(page.layout.rowHeight,26);assert.equal(page.entries.length,24);assert.equal(page.entries[0].startsGroup,false);
+        page.entries.forEach((entry,index)=>{assert.equal(entry.type,'member');assert.equal(entry.startsGroup,!!entry.row&&index>0&&entry.groupLabel!==page.entries[index-1].groupLabel)});
+      }
+    }
+  }
+});
+test('a group spanning a page boundary has no added separator or empty rows',()=>{
+  const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupOrder:['Trainer','Beginner']},rows=Array.from({length:30},(_,id)=>({id,'Aktive Rollen':id<26?'Trainer':'Beginner'})),pages=api.listPages([{year:2026,month:9}],rows,settings);
+  assert.equal(pages.length,2);assert.equal(pages[0].rows.length,24);assert.equal(pages[1].entries[0].groupLabel,'Trainer');assert.equal(pages[1].entries[0].startsGroup,false);assert.equal(pages[1].entries[2].startsGroup,true);assert.equal(pages[1].entries.filter(entry=>entry.startsGroup).length,1);assert.equal(pages[1].entries.filter(entry=>entry.row===null).length,18);
 });
 test('separate group pages keep all configured participant slots and spare rows',()=>{
   const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupLayout:'pages',groupOrder:['Trainer','Beginner']},rows=Array.from({length:25},(_,id)=>({id,'Aktive Rollen':id<24?'Trainer':'Beginner'})),pages=api.listPages([{year:2026,month:9}],rows,settings);
