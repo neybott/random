@@ -9,7 +9,7 @@ function app({stored=null,cookie=''}={}){
   const values=new Map(stored?[['vp2anwesenheit_settings',stored]]:[]);
   const context=vm.createContext({Date,Intl,TextDecoder,document:{cookie},localStorage:{getItem:key=>values.get(key)||null}});
   // Exercise the shipped functions without booting the UI or adding a test API to the page.
-  vm.runInContext(script.slice(0,script.indexOf("$('dropZone').onclick="))+`globalThis.api={defaults,parseCsv,matrixToObjects,matchesFilter,datesForMonth,dateLabel,monthRange,pagesForMonths,sheetRows,canvasLines,validateSettings,loadSettings,fullName,setState(value){state={...defaults(),...value}}};})();`,context);
+  vm.runInContext(script.slice(0,script.indexOf('// Bind controls.'))+`globalThis.api={defaults,parseCsv,matrixToObjects,matchesFilter,datesForMonth,dateLabel,monthRange,pagesForMonths,sheetRows,canvasLines,pageGeometry,groupMembers,columnsForMonth,listPages,validateSettings,loadSettings,fullName,setState(value){state={...defaults(),...value}}};})();`,context);
   return context.api;
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
@@ -82,4 +82,46 @@ test('PDF text wrapping preserves names and splits long words within cell width'
   assert.deepEqual(plain(api.canvasLines(context,'Anna Maria Muster',10)),['Anna Maria','Muster']);
   assert.deepEqual(plain(api.canvasLines(context,'Brandstätter',5)),['Brand','stätt','er']);
   assert.deepEqual(plain(api.canvasLines(context,'',10)),['']);
+});
+
+test('legacy settings retain defaults for grouping, orientation and custom columns',()=>{
+  const api=app(),settings=plain(api.defaults());for(const key of ['orientation','groupBy','groupLayout','groupOrder','customColumns'])delete settings[key];
+  const s=api.validateSettings({format:'vereinsplaner2anwesenheit-settings',version:1,settings});
+  assert.equal(s.orientation,'landscape');assert.equal(s.groupBy,'');assert.equal(s.groupLayout,'sections');assert.deepEqual(plain(s.customColumns),[]);
+});
+test('new layout settings validate and preserve editable column settings',()=>{
+  const api=app(),settings=plain(api.defaults()),data=patch=>({format:'vereinsplaner2anwesenheit-settings',version:1,settings:{...settings,...patch}});
+  const valid={orientation:'portrait',groupBy:'Aktive Rollen',groupLayout:'pages',groupOrder:['Trainer','Beginner'],customColumns:[{label:'Bezahlt',position:'before'},{label:'',position:'after'}]};
+  assert.deepEqual(plain(api.validateSettings(data(valid))).customColumns,valid.customColumns);
+  for(const patch of [{orientation:'horizontal'},{groupBy:5},{groupLayout:'invalid'},{groupOrder:'Trainer'},{groupOrder:[5]},{customColumns:[{label:'Test',position:'middle'}]},{customColumns:[{label:'x'.repeat(41),position:'after'}]},{customColumns:Array.from({length:13},()=>({label:'X',position:'after'}))}])assert.throws(()=>api.validateSettings(data(patch)));
+});
+test('A4 portrait and landscape have corresponding printable dimensions',()=>{
+  const api=app();assert.deepEqual(plain(api.pageGeometry('portrait')),{orientation:'portrait',paperWidth:210,paperHeight:297,contentWidth:190,contentHeight:287,nameFraction:.32});
+  assert.equal(api.pageGeometry('landscape').contentWidth,277);assert.equal(api.pageGeometry('landscape').contentHeight,200);
+});
+test('role grouping honors priority, handles multiple roles once and puts missing values last',()=>{
+  const api=app(),rows=[{id:1,'Aktive Rollen':'Advanced, Trainer'},{id:2,'Aktive Rollen':'Beginner'},{id:3,'Aktive Rollen':'Intermediate'},{id:4,'Aktive Rollen':''},{id:5,'Aktive Rollen':'trainer; Beginner'},{id:6,'Aktive Rollen':'Sonstige'}];
+  const groups=api.groupMembers(rows,'Aktive Rollen',['Trainer','Beginner','Intermediate','Advanced']);
+  assert.deepEqual(plain(groups.map(group=>group.label)),['Trainer','Beginner','Intermediate','Sonstige','Ohne Zuordnung']);
+  assert.deepEqual(plain(groups[0].rows.map(row=>row.id)),[1,5]);assert.equal(groups.flatMap(group=>group.rows).length,6);
+  assert.deepEqual(plain(api.groupMembers(rows,'',[])[0].rows),rows);
+});
+test('custom source fields use their complete values for grouping',()=>{
+  const api=app(),groups=api.groupMembers([{Ort:'Linz, Zentrum'},{Ort:'Linz'}],'Ort',[]);assert.equal(groups.length,2);assert.ok(groups.some(group=>group.label==='Linz, Zentrum'));
+});
+test('additional columns surround the requested weekdays in stable order',()=>{
+  const api=app(),settings={...plain(api.defaults()),weekdays:[2],customColumns:[{label:'Bezahlt',position:'before'},{label:'Notiz',position:'after'},{label:'Test',position:'before'},{label:' ',position:'after'}]},cols=api.columnsForMonth({year:2026,month:9},settings);
+  assert.deepEqual(plain(cols.slice(0,2).map(column=>column.label)),['Bezahlt','Test']);assert.equal(cols.at(-1).label,'Notiz');assert.equal(cols.filter(column=>column.kind==='date').length,4);assert.ok(cols.some(column=>column.label==='DI - 20.10'));
+});
+test('section grouping paginates without orphan headings, lost people or shrunken rows',()=>{
+  const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupOrder:['Trainer','Beginner','Intermediate','Advanced']},rows=Array.from({length:55},(_,id)=>({id,'Aktive Rollen':settings.groupOrder[Math.floor(id/14)]})),months=[{year:2026,month:9},{year:2026,month:10}],pages=api.listPages(months,rows,settings);
+  for(const month of months){const selected=pages.filter(page=>page.month===month);assert.deepEqual(plain(selected.flatMap(page=>page.rows)),rows);assert.ok(selected.length>2);for(const page of selected){assert.equal(page.layout.rowHeight,26);assert.ok(page.rows.length<=24);assert.equal(page.entries[0].type,'group');assert.ok(page.used<=page.layout.bodyBudget);page.entries.forEach((entry,index)=>{if(entry.type==='group')assert.ok(page.entries[index+1]?.row)});}}
+  assert.ok(pages.some(page=>page.entries.some(entry=>entry.continued)));
+});
+test('separate group pages keep all configured participant slots and spare rows',()=>{
+  const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupLayout:'pages',groupOrder:['Trainer','Beginner']},rows=Array.from({length:25},(_,id)=>({id,'Aktive Rollen':id<24?'Trainer':'Beginner'})),pages=api.listPages([{year:2026,month:9}],rows,settings);
+  assert.deepEqual(plain(pages.map(page=>page.groupLabel)),['Trainer','Beginner']);assert.ok(pages.every(page=>page.entries.length===24));assert.equal(pages[1].entries.filter(entry=>entry.row===null).length,23);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);
+});
+test('ungrouped layout preserves the exact number of name slots in both orientations',()=>{
+  const api=app();for(const orientation of ['landscape','portrait']){const settings={...plain(api.defaults()),rowsPerPage:24,orientation},rows=Array.from({length:25},(_,id)=>({id})),pages=api.listPages([{year:2026,month:9}],rows,settings);assert.deepEqual(plain(pages.map(page=>page.entries.length)),[24,24]);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);assert.ok(pages.every(page=>page.layout.rowHeight===26));}
 });
