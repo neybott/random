@@ -157,10 +157,10 @@ function listPages(monthList,rows,settings){
   const members=groups.flatMap(group=>group.rows.map(row=>({row,groupLabel:group.label})));
   const batches=settings.groupBy&&settings.groupLayout==='pages'?groups.map(group=>({label:group.label,members:group.rows.map(row=>({row,groupLabel:group.label}))})):[{label:'',members}];
   for(const month of monthList){
-    const layout=layoutForMonth(month,settings),capacity=Math.min(settings.rowsPerPage,Math.floor(layout.bodyBudget/layout.rowHeight)),monthPages=[];
+    const layout=layoutForMonth(month,settings),availableRows=Math.floor(layout.bodyBudget/layout.rowHeight),capacity=Math.min(settings.rowsPerPage,availableRows),slots=settings.orientation==='portrait'?availableRows:capacity,monthPages=[];
     for(const batch of batches){
       for(const page of pagesForMonths([month],batch.members,capacity)){
-        const entries=sheetRows(page.rows,capacity).map((member,index)=>({type:'member',row:member?.row??null,groupLabel:member?.groupLabel??'',startsGroup:!!member&&index>0&&member.groupLabel!==page.rows[index-1].groupLabel}));
+        const entries=sheetRows(page.rows,slots).map((member,index)=>({type:'member',row:member?.row??null,groupLabel:member?.groupLabel??'',startsGroup:!!member&&index>0&&member.groupLabel!==page.rows[index-1].groupLabel}));
         monthPages.push({...page,rows:page.rows.map(member=>member.row),groupLabel:batch.label,layout,entries});
       }
     }

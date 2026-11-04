@@ -121,7 +121,7 @@ test('compact grouping fills every page and marks transitions without extra rows
     for(const month of months){
       const selected=pages.filter(page=>page.month===month);assert.equal(selected.length,Math.ceil(count/24));assert.deepEqual(plain(selected.flatMap(page=>page.rows)),plain(expected));
       for(const page of selected){
-        assert.equal(page.layout.rowHeight,26);assert.equal(page.entries.length,24);assert.equal(page.entries[0].startsGroup,false);
+        assert.equal(page.layout.rowHeight,26);assert.equal(page.entries.length,orientation==='portrait'?Math.floor(page.layout.bodyBudget/page.layout.rowHeight):24);assert.equal(page.entries[0].startsGroup,false);
         page.entries.forEach((entry,index)=>{assert.equal(entry.type,'member');assert.equal(entry.startsGroup,!!entry.row&&index>0&&entry.groupLabel!==page.entries[index-1].groupLabel)});
       }
     }
@@ -135,6 +135,20 @@ test('separate group pages keep all configured participant slots and spare rows'
   const api=app(),settings={...plain(api.defaults()),rowsPerPage:24,groupBy:'Aktive Rollen',groupLayout:'pages',groupOrder:['Trainer','Beginner']},rows=Array.from({length:25},(_,id)=>({id,'Aktive Rollen':id<24?'Trainer':'Beginner'})),pages=api.listPages([{year:2026,month:9}],rows,settings);
   assert.deepEqual(plain(pages.map(page=>page.groupLabel)),['Trainer','Beginner']);assert.ok(pages.every(page=>page.entries.length===24));assert.equal(pages[1].entries.filter(entry=>entry.row===null).length,23);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);
 });
-test('ungrouped layout preserves the exact number of name slots in both orientations',()=>{
-  const api=app();for(const orientation of ['landscape','portrait']){const settings={...plain(api.defaults()),rowsPerPage:24,orientation},rows=Array.from({length:25},(_,id)=>({id})),pages=api.listPages([{year:2026,month:9}],rows,settings);assert.deepEqual(plain(pages.map(page=>page.entries.length)),[24,24]);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);assert.ok(pages.every(page=>page.layout.rowHeight===26));}
+test('ungrouped pages preserve participant limits and fill portrait pages with blank slots',()=>{
+  const api=app();for(const orientation of ['landscape','portrait']){const settings={...plain(api.defaults()),rowsPerPage:24,orientation},rows=Array.from({length:25},(_,id)=>({id})),pages=api.listPages([{year:2026,month:9}],rows,settings);const slots=orientation==='portrait'?Math.floor(pages[0].layout.bodyBudget/pages[0].layout.rowHeight):24;assert.deepEqual(plain(pages.map(page=>page.entries.length)),[slots,slots]);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);assert.ok(pages.every(page=>page.layout.rowHeight===26));}
+});
+
+test('portrait blank rows use the remaining page height without changing participant pagination',()=>{
+  const api=app();
+  for(const groupLayout of ['sections','pages'])for(const rowsPerPage of [20,24,30,50]){
+    const settings={...plain(api.defaults()),orientation:'portrait',rowsPerPage,groupBy:'Aktive Rollen',groupLayout,weekdays:[2,5],customColumns:[{label:'Regelkunde',position:'after'},{label:'Turniererfahrung',position:'after'}]},rows=Array.from({length:rowsPerPage+1},(_,id)=>({id,'Aktive Rollen':'Trainer'})),pages=api.listPages([{year:2026,month:10}],rows,settings);
+    assert.equal(pages.length,2);assert.deepEqual(plain(pages.flatMap(page=>page.rows)),rows);
+    for(const page of pages){
+      const used=page.entries.length*page.layout.rowHeight,remaining=page.layout.bodyBudget-used;
+      assert.ok(remaining>=0&&remaining<page.layout.rowHeight);assert.ok(page.rows.length<=rowsPerPage);
+      assert.ok(page.entries.slice(page.rows.length).every(entry=>entry.row===null&&!entry.startsGroup&&entry.groupLabel===''));
+    }
+    assert.ok(pages[0].entries.length>rowsPerPage);
+  }
 });
